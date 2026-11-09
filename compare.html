@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>横向对比 · IMAGE.GEN LAB</title>
+<meta name="description" content="同一 prompt、同一 seed 下的跨模型并排对照：Z-Image Turbo 与 SDXL Juggernaut-XL v9，含耗时、显存与判读，以及这组对照本身的限制。">
+<link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-in">
+    <a class="brand" href="index.html"><b>IMAGE.GEN/LAB</b><span>本机生图实验档案</span></a>
+    <nav class="nav-links">
+      <a href="index.html">方案总览</a>
+      <a class="is-active" href="compare.html">横向对比</a>
+      <a href="gallery.html">案例库</a>
+      <a href="index.html#method">方法论</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="page-head">
+    <div class="ph-grid">
+      <div>
+        <p class="crumb"><a href="index.html">方案总览</a><span class="sep">/</span><span>COMPARE</span></p>
+        <h1 class="ph-title">横向对比</h1>
+        <p class="ph-sub">SAME PROMPT / SAME SEED / SAME CANVAS</p>
+        <p class="ph-lede">
+          能严格并排的只有一组：玄枢 003 湘叁，832×1216，seed 111。
+          其余主体与模型要么没有同条件产物，要么因收录边界不公开。<b>本页不拼凑对照组</b>。
+        </p>
+      </div>
+      <aside class="spec-card">
+        <div class="spec-head"><span>SCOPE</span><span>2026-11-09</span></div>
+        <dl class="spec-body" style="margin:0">
+          <div class="spec-row"><dt>可比组</dt><dd class="num">1 组</dd></div>
+          <div class="spec-row"><dt>参与模型</dt><dd class="num">2 个</dd></div>
+          <div class="spec-row"><dt>画幅</dt><dd class="num">832 × 1216</dd></div>
+          <div class="spec-row"><dt>seed</dt><dd class="num">111</dd></div>
+          <div class="spec-row"><dt>prompt</dt><dd>完全相同</dd></div>
+          <div class="spec-row"><dt>输入条件</dt><dd>不同，见限制</dd></div>
+        </dl>
+      </aside>
+    </div>
+  </section>
+
+  <section class="doc">
+    <div class="doc-grid">
+      <div>
+
+        <article class="chapter" id="g1">
+          <div class="ch-head"><span class="ch-num">A</span><h2>玄枢 003 湘叁 · seed 111</h2></div>
+          <p>同一 prompt、同一 seed、同一画幅。左为当前主力，右为历史基线。</p>
+
+          <div class="cmp-grid">
+            <div class="cmp-col">
+              <div class="cmp-head"><h3>Z-Image Turbo</h3><span>主力 · 8 步</span></div>
+              <figure><img src="assets/img/cmp-zimage-xuanshu.webp" alt="Z-Image Turbo 生成的原创科幻角色" loading="lazy" width="900" height="1316"></figure>
+              <dl class="cmp-kv">
+                <div><dt>TIME</dt><dd>49.89<small>s</small></dd></div>
+                <div><dt>STEPS</dt><dd>8<small>cfg 1.0</small></dd></div>
+                <div><dt>PEAK</dt><dd>22.98<small>GB</small></dd></div>
+              </dl>
+            </div>
+            <div class="cmp-col">
+              <div class="cmp-head"><h3>SDXL · Juggernaut-XL v9</h3><span>基线 · 30 步</span></div>
+              <figure><img src="assets/img/cmp-sdxl-xuanshu.webp" alt="SDXL 生成的原创科幻角色" loading="lazy" width="900" height="1316"></figure>
+              <dl class="cmp-kv">
+                <div><dt>TIME</dt><dd>55.26<small>s</small></dd></div>
+                <div><dt>STEPS</dt><dd>30<small>cfg 6.0</small></dd></div>
+                <div><dt>PEAK</dt><dd>11.04<small>GB</small></dd></div>
+              </dl>
+            </div>
+          </div>
+
+          <div class="callout warn">
+            <p><b>这组对照不是同条件：</b>Z-Image 走纯 t2i（denoise 1.0，无参考图）；SDXL 走 i2i denoise 0.45 + IPAdapter 0.85，输入里带了参考立绘。
+              所以「SDXL 版型更贴」不能全部归因于模型能力，其中一部分来自参考图。速度与显存可以直接比，版型相似度不能。</p>
+          </div>
+        </article>
+
+        <article class="chapter" id="table">
+          <div class="ch-head"><span class="ch-num">B</span><h2>对照表</h2></div>
+          <div class="table-wrap">
+            <table class="data">
+              <thead>
+                <tr><th>项</th><th>Z-Image Turbo</th><th>SDXL Juggernaut</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>步数</td><td class="num">8</td><td class="num">30</td></tr>
+                <tr><td>cfg</td><td class="num">1.0</td><td class="num">6.0</td></tr>
+                <tr><td>denoise</td><td class="num">1.00</td><td class="num">0.45</td></tr>
+                <tr><td>采样器</td><td class="mono">res_multistep / simple</td><td class="mono">dpmpp_2m / karras</td></tr>
+                <tr><td>附加控制</td><td class="null">无</td><td>IPAdapter 0.85 linear</td></tr>
+                <tr><td>耗时</td><td class="num">49.89 s</td><td class="num">55.26 s</td></tr>
+                <tr><td>最低空闲显存</td><td class="num">34.86 GB</td><td class="num">46.80 GB</td></tr>
+                <tr><td>峰值（计算）</td><td class="num">22.98 GB</td><td class="num">11.04 GB</td></tr>
+                <tr><td>相对耗时</td><td class="num">1.00×</td><td class="num">1.11×</td></tr>
+                <tr><td>画幅</td><td class="num">832 × 1216</td><td class="num">832 × 1216</td></tr>
+                <tr><td>结论</td><td>采用</td><td>仅作对照</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="table-note">
+            峰值 = vram_total 57.84 GB − 最低 vram_free，属于计算值。相对耗时以本组 Z-Image 的 49.89 s 为 1.00。
+          </p>
+        </article>
+
+        <article class="chapter" id="read">
+          <div class="ch-head"><span class="ch-num">C</span><h2>怎么读</h2></div>
+          <ul>
+            <li><b>锐度不等于画质。</b>SDXL 的边缘更硬，缩略图下显得更「清楚」；放到 100% 看皮肤与织物，高光是塑料的，缺少漫反射层次。Z-Image 反过来：边缘略软，但材质有过渡。</li>
+            <li><b>显存是反直觉的。</b>步数多 3.75 倍的 SDXL，峰值只有 Z-Image 的一半。原因是 Z-Image 的 16 通道潜空间与 4B 文本编码器更占内存，不是步数。</li>
+            <li><b>速度差没有想象中大。</b>8 步对 30 步，实际只差 5.37 s。瓶颈在文本编码与权重加载，不在采样步数上。</li>
+            <li><b>版型对照不可用。</b>SDXL 有参考图，Z-Image 没有。要真比版型，得让 Z-Image 也走 i2i 同一张参考图，这组实验还没做。</li>
+          </ul>
+        </article>
+
+        <article class="chapter" id="prompt">
+          <div class="ch-head"><span class="ch-num">D</span><h2>共用 prompt</h2></div>
+          <details class="prompt" open><summary>PROMPT 原文（两侧完全一致）</summary><pre>1girl, solo, long wavy light-brown hair, glowing purple eyes, white and silver futuristic armor dress with lace trim, glowing purple chest line, white lace thigh-high stockings, barefoot, serene expression, cold blue rim light, dark sci-fi background, floating pose, full body, 3D CG semi-realistic render, beautiful delicate face, refined symmetrical features, large expressive eyes, clear luminous skin with soft subsurface scattering, defined cheekbones, soft single-source key light with subtle cool rim light, shallow depth of field, cinematic color grade, ultra detailed</pre></details>
+          <p class="table-note">两侧都用这一条，未做 prompt 改写或加权。</p>
+        </article>
+
+        <article class="chapter" id="missing">
+          <div class="ch-head"><span class="ch-num">E</span><h2>没有进来的组</h2></div>
+          <ul>
+            <li><b>其余 4 个主体</b>：同批次有产出，但按收录边界不公开，因此不参与并排。</li>
+            <li><b>Krea 2</b>：0 条产出，无法对照。见 <a href="scheme-krea2.html" style="color:var(--accent)">方案 06</a>。</li>
+            <li><b>MOSS-Image</b>：权重下载中。见 <a href="scheme-moss.html" style="color:var(--accent)">方案 07</a>。</li>
+            <li><b>Z-Image Base</b>：无独立产物。见 <a href="scheme-zimage-base.html" style="color:var(--accent)">方案 03</a>。</li>
+            <li><b>同条件 i2i 对照</b>：让 Z-Image 也吃同一张参考图，还没排期。</li>
+          </ul>
+          <div class="callout mute">
+            <p>本页只放能核对到原始记录的一组。缺的组宁可空着，也不拿不同 prompt 或不同 seed 的图拼在一起。</p>
+          </div>
+        </article>
+
+        <nav class="pager">
+          <a href="scheme-moss.html"><span class="pg-l">← PREV / 07</span><span class="pg-t">MOSS-Image</span></a>
+          <a class="next" href="gallery.html"><span class="pg-l">NEXT</span><span class="pg-t">案例库</span></a>
+        </nav>
+
+      </div>
+
+      <aside class="rail">
+        <h5>本页目录</h5>
+        <nav>
+          <a href="#g1">A 并排图</a>
+          <a href="#table">B 对照表</a>
+          <a href="#read">C 怎么读</a>
+          <a href="#prompt">D 共用 prompt</a>
+          <a href="#missing">E 没有进来的组</a>
+        </nav>
+        <div class="src">
+          <h5>数据出处</h5>
+          <p>
+            A/B 对照批次 · 4 条记录<br>
+            耗时来自 results 逐条记录<br>
+            显存为计算值<br>
+            仅公开 1 组主体
+          </p>
+          <div style="margin-top:10px">
+            <span class="tag">#A/B</span><span class="tag">#same-prompt</span>
+            <span class="tag">#same-seed</span>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-grid">
+    <div>
+      <h5>口径</h5>
+      <p>
+        所有耗时含采样到落盘；首次加载在表格内单独注明。显存为 ComfyUI 上报的 vram_free 最低值，
+        峰值由 vram_total 相减得到，属于计算值。取不到的值写 null，不按记忆补写。
+      </p>
+    </div>
+    <div>
+      <h5>合规</h5>
+      <p class="fine">
+        仅收录原创科幻角色的技术对照与静物样张。<br>
+        路径已脱敏，无个人账号与本机目录。
+      </p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

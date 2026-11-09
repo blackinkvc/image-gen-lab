@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Z-Image Base · 方案详情 · IMAGE.GEN LAB</title>
+<meta name="description" content="Z-Image Base 的记录：同架构非蒸馏版、30 步 cfg 4.0 的既定配方，以及「没有独立产出」这一事实与它的数据边界。">
+<link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-in">
+    <a class="brand" href="index.html"><b>IMAGE.GEN/LAB</b><span>本机生图实验档案</span></a>
+    <nav class="nav-links">
+      <a class="is-active" href="index.html">方案总览</a>
+      <a href="compare.html">横向对比</a>
+      <a href="gallery.html">案例库</a>
+      <a href="index.html#method">方法论</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="page-head">
+    <p class="crumb">
+      <a href="index.html">方案总览</a><span class="sep">/</span><span>03</span><span class="sep">/</span><span>Z-Image Base</span>
+    </p>
+    <div class="ph-grid">
+      <div>
+        <div class="card-top" style="margin-bottom:18px;justify-content:flex-start;gap:14px">
+          <span class="status">备选</span>
+          <span class="mono" style="font-size:10px;color:var(--text-3);letter-spacing:.1em">未单独留档</span>
+        </div>
+        <h1 class="ph-title">Z-Image Base</h1>
+        <p class="ph-sub">ZIMAGE-BF16 · 30 STEPS · CFG 4.0 · 16-CH LATENT</p>
+        <p class="ph-lede">
+          和 Turbo 同一架构的非蒸馏版。理论上低频更准、构型更稳，代价是 30 步。
+          实际上它<b>只在双采实验里作为第一段跑过，而且那组实验没跑成</b>——所以这一页没有可用数据。
+        </p>
+      </div>
+
+      <aside class="spec-card">
+        <div class="spec-head"><span>SPEC</span><span>BF16 / COMFYUI</span></div>
+        <dl class="spec-body" style="margin:0">
+          <div class="spec-row"><dt>扩散模型</dt><dd>z_image_bf16<br>约 11–12 GiB（估算）</dd></div>
+          <div class="spec-row"><dt>文本编码</dt><dd>qwen_3_4b · lumina2<br>7.49 GiB</dd></div>
+          <div class="spec-row"><dt>VAE</dt><dd>ae.safetensors<br>320 MB</dd></div>
+          <div class="spec-row"><dt>潜空间</dt><dd>16 通道</dd></div>
+          <div class="spec-row"><dt>采样</dt><dd>res_multistep / simple</dd></div>
+          <div class="spec-row"><dt>步数 / cfg</dt><dd>30 / 4.0</dd></div>
+          <div class="spec-row"><dt>shift</dt><dd>AuraFlow 3.0</dd></div>
+          <div class="spec-row"><dt>独立产出</dt><dd class="null">0 张</dd></div>
+        </dl>
+      </aside>
+    </div>
+
+    <div class="verdict-box">
+      <p class="vb-label">结论先行 / VERDICT</p>
+      <ol>
+        <li><b>没有独立实测。</b><span>Base 只在双采的 B 组里出现过；B 组在 0.25 档 OOM，0.35 档未执行，所以既没有单独出图，也没有耗时与显存记录。</span></li>
+        <li><b>「低频更准」是机制推断，不是观测量。</b><span>非蒸馏 + 30 步 + cfg 4.0 理论上给足低频收敛空间，但本机没有跑出对照图，本页不给结论。</span></li>
+        <li><b>当前不用于交付。</b><span>单采 Turbo 已覆盖全部出图需求；Base 只在需要复现双采实验时才会被加载。</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="doc">
+    <div class="doc-grid">
+      <div>
+
+        <article class="chapter" id="what">
+          <div class="ch-head"><span class="ch-num">01</span><h2>它是什么</h2></div>
+          <p>
+            Z-Image Base 与 Turbo 共用同一套架构：16 通道潜空间、Qwen3-4B 文本编码器、同一个
+            <span class="mono">ae.safetensors</span> VAE。区别在训练目标——Turbo 是 8 步蒸馏，
+            Base 是完整的多步模型。<strong>同架构意味着两者的潜变量可以直接对接</strong>，这也是当初尝试双采的前提。
+          </p>
+          <p>
+            分工上，Base 负责「把结构画对」，Turbo 负责「快速重采样细节」。双采实验就是想把这个分工串起来：
+            Base 30 步定型，Turbo 8 步低 denoise 精修。结论是这条链在本机装不下，详见
+            <a href="scheme-double.html" style="color:var(--accent)">方案 04</a>。
+          </p>
+        </article>
+
+        <article class="chapter" id="run">
+          <div class="ch-head"><span class="ch-num">02</span><h2>怎么跑</h2></div>
+          <p>节点链与 Turbo 完全一致，只改步数、cfg 与 denoise。下面是双采实验里用的第一段配置。</p>
+
+          <div class="recipe">
+            <div class="recipe-head"><span>NODE GRAPH</span><span>Base 第一段 / 双采实验配置</span></div>
+<pre>UNETLoader        <span class="k">z_image_bf16.safetensors</span>  weight_dtype=default
+CLIPLoader        <span class="k">qwen_3_4b.safetensors</span>        type=lumina2
+VAELoader         <span class="k">ae.safetensors</span>
+ModelSamplingAuraFlow  shift=<span class="k">3.0</span>
+CLIPTextEncode    positive / negative
+EmptyLatentImage  <span class="k">832 × 1216</span>  batch=1
+KSampler          steps=<span class="k">30</span> cfg=<span class="k">4.0</span> sampler=res_multistep
+                  scheduler=simple denoise=<span class="k">1.00</span>
+VAEDecode         <span class="c"># 双采时此处不落盘，直接接 Turbo 续采</span></pre>
+          </div>
+
+          <div class="callout mute">
+            <p><b>未定型：</b>30 步 / cfg 4.0 来自双采实验的既定配置，没有做过 Base 单独的步数与 cfg 扫描。采样器与调度器沿用 Turbo 的一套，未单独验证是否最优。</p>
+          </div>
+        </article>
+
+        <article class="chapter" id="data">
+          <div class="ch-head"><span class="ch-num">03</span><h2>实测数据</h2></div>
+          <p>没有可填的行。下表按台账字段列出口径，值一律为未采集。</p>
+
+          <div class="table-wrap">
+            <table class="data">
+              <thead>
+                <tr><th>指标</th><th>值</th><th>说明</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>单张耗时</td><td class="null">null</td><td class="dim">未单独跑过</td></tr>
+                <tr><td>最低空闲显存</td><td class="null">null</td><td class="dim">同上</td></tr>
+                <tr><td>峰值显存</td><td class="null">null</td><td class="dim">无法计算</td></tr>
+                <tr><td>产出张数</td><td class="num">0</td><td class="dim">双采 B 组未完成</td></tr>
+                <tr><td>权重体积</td><td class="num">约 11–12 GiB</td><td class="dim">估算，未精确核对文件大小</td></tr>
+                <tr><td>30 步耗时外推</td><td class="na">"n/a"</td><td class="dim">按 8 步 29 s 外推的 100–120 s 属估算，不写入实测</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="empty">
+            <span class="glyph">NO DATA</span>
+            <p>
+              本机没有 Base 的独立产出图。<br>
+              双采 B 组在 0.25 档 OOM（分配 4.66 GB 失败），0.35 档未执行。
+            </p>
+          </div>
+        </article>
+
+        <article class="chapter" id="cases">
+          <div class="ch-head"><span class="ch-num">04</span><h2>案例</h2></div>
+          <p>无。Base 从未单独落盘过图片，因此不提供案例图，也不拿 Turbo 的图代替。</p>
+          <div class="empty">
+            <span class="glyph">0 IMG</span>
+            <p>没有可展示的原始产物</p>
+          </div>
+        </article>
+
+        <article class="chapter" id="judge">
+          <div class="ch-head"><span class="ch-num">05</span><h2>判定</h2></div>
+          <p>按现行口径（服装版型 / 配色材质 / 配饰 / 发型轮廓 / 体型 / 义体）逐项过——但没有图可判。</p>
+          <div class="checklist">
+            <div><b>服装版型 —</b>无样本，不判。</div>
+            <div><b>配色材质 —</b>无样本，不判。</div>
+            <div><b>配饰 —</b>无样本，不判。</div>
+            <div><b>发型轮廓 —</b>无样本，不判。</div>
+            <div><b>体型比例 —</b>无样本，不判。</div>
+            <div class="no"><b>可用性 ✗</b>当前不可交付：没有独立验证，也无成品。</div>
+          </div>
+          <p class="table-note">「—」= 按现行口径不判 / 无样本；「✗」= 现状限制。</p>
+        </article>
+
+        <article class="chapter" id="proscons">
+          <div class="ch-head"><span class="ch-num">06</span><h2>优缺点</h2></div>
+          <div class="proscons">
+            <div class="pc">
+              <h4>预期优势 / 未验证</h4>
+              <ul>
+                <li>非蒸馏 + 30 步，理论上低频（构图、体块、姿态）更稳。（推断）</li>
+                <li>cfg 4.0 比 Turbo 的 1.0 有更强的提示词约束力。（推断）</li>
+                <li>与 Turbo 同架构、同 VAE，潜空间可直接对接。（结构事实）</li>
+              </ul>
+            </div>
+            <div class="pc cons">
+              <h4>代价 / 已验证</h4>
+              <ul>
+                <li>30 步，单张成本至少是 8 步的数倍。（机制推断，未计时）</li>
+                <li>与 Turbo 同时常驻会 OOM，本机装不下两套 UNET。（实测）</li>
+                <li>没有 IPAdapter / ControlNet，控制力仍不如 SDXL。（结构事实）</li>
+                <li>当前没有任何可用产出，无法进入交付链。（事实）</li>
+              </ul>
+            </div>
+          </div>
+        </article>
+
+        <article class="chapter" id="limits">
+          <div class="ch-head"><span class="ch-num">07</span><h2>没验证的 / 数据限制</h2></div>
+          <ul>
+            <li><b>独立跑单张</b>：从未执行，耗时与显存全部为 <span class="mono">null</span>。</li>
+            <li><b>步数 / cfg 扫描</b>：30 / 4.0 是既定值，没有 20 步、40 步、cfg 3.0 的对照。</li>
+            <li><b>画质对照</b>：Base 与 Turbo 在同一 prompt 下的差异没有图，只有机制描述。</li>
+            <li><b>串行装载</b>：先卸 TE 再换 UNET 的降内存方案未做端到端测试，已随双采一起放弃。</li>
+            <li><b>权重体积</b>：11–12 GiB 是按同架构估算，未精确读取文件。</li>
+          </ul>
+        </article>
+
+        <nav class="pager">
+          <a href="scheme-zimage-turbo.html"><span class="pg-l">← PREV / 02</span><span class="pg-t">Z-Image Turbo</span></a>
+          <a class="next" href="scheme-double.html"><span class="pg-l">NEXT / 04</span><span class="pg-t">双采 · 已放弃</span></a>
+        </nav>
+
+      </div>
+
+      <aside class="rail">
+        <h5>本页目录</h5>
+        <nav>
+          <a href="#what">01 它是什么</a>
+          <a href="#run">02 怎么跑</a>
+          <a href="#data">03 实测数据</a>
+          <a href="#cases">04 案例</a>
+          <a href="#judge">05 判定</a>
+          <a href="#proscons">06 优缺点</a>
+          <a href="#limits">07 数据限制</a>
+        </nav>
+        <div class="src">
+          <h5>数据出处</h5>
+          <p>
+            双采实验记录 · 2026-11-09<br>
+            参数基线文档 · 第七 / 八节<br>
+            本页无实测行
+          </p>
+          <div style="margin-top:10px">
+            <span class="tag">#Z-Image</span><span class="tag">#Base</span>
+            <span class="tag">#30step</span><span class="tag">#no-data</span>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-grid">
+    <div>
+      <h5>口径</h5>
+      <p>
+        所有耗时含采样到落盘；首次加载在表格内单独注明。显存为 ComfyUI 上报的 vram_free 最低值，
+        峰值由 vram_total 相减得到，属于计算值。取不到的值写 null，不按记忆补写。
+      </p>
+    </div>
+    <div>
+      <h5>合规</h5>
+      <p class="fine">
+        仅收录原创科幻角色的技术对照与静物样张。<br>
+        路径已脱敏，无个人账号与本机目录。
+      </p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

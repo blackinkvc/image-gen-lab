@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SDXL · Juggernaut-XL v9 · 方案详情 · IMAGE.GEN LAB</title>
+<meta name="description" content="SDXL / Juggernaut-XL v9 的实验记录：136 条台账、A/B 对照、8K 海报原图、IPAdapter 配方与「更锐但更蜡」的判定依据。">
+<link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-in">
+    <a class="brand" href="index.html"><b>IMAGE.GEN/LAB</b><span>本机生图实验档案</span></a>
+    <nav class="nav-links">
+      <a class="is-active" href="index.html">方案总览</a>
+      <a href="compare.html">横向对比</a>
+      <a href="gallery.html">案例库</a>
+      <a href="index.html#method">方法论</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="page-head">
+    <p class="crumb">
+      <a href="index.html">方案总览</a><span class="sep">/</span><span>01</span><span class="sep">/</span><span>SDXL · Juggernaut-XL v9</span>
+    </p>
+    <div class="ph-grid">
+      <div>
+        <div class="card-top" style="margin-bottom:18px;justify-content:flex-start;gap:14px">
+          <span class="status">历史基线</span>
+          <span class="mono" style="font-size:10px;color:var(--text-3);letter-spacing:.1em">2026-11 前默认</span>
+        </div>
+        <h1 class="ph-title">SDXL · Juggernaut-XL v9</h1>
+        <p class="ph-sub">SDXL 1.0 · 4-CH LATENT · IPADAPTER + CONTROLNET</p>
+        <p class="ph-lede">
+          第一套跑顺的管线，也是唯一一套有完整 IPAdapter / ControlNet 生态的。
+          它的高频更硬、边缘更锐，但皮肤与织物偏<b>蜡</b>——这是被 Z-Image 取代的直接原因，不是速度问题。
+        </p>
+      </div>
+
+      <aside class="spec-card">
+        <div class="spec-head"><span>SPEC</span><span>FP16 / COMFYUI</span></div>
+        <dl class="spec-body" style="margin:0">
+          <div class="spec-row"><dt>扩散模型</dt><dd>Juggernaut-XL_v9<br>RunDiffusionPhoto_v2</dd></div>
+          <div class="spec-row"><dt>文本编码</dt><dd>内置双 CLIP</dd></div>
+          <div class="spec-row"><dt>VAE</dt><dd>内置</dd></div>
+          <div class="spec-row"><dt>潜空间</dt><dd>4 通道</dd></div>
+          <div class="spec-row"><dt>采样</dt><dd>dpmpp_2m / karras</dd></div>
+          <div class="spec-row"><dt>步数 / cfg</dt><dd>24 / 5.0（台账）</dd></div>
+          <div class="spec-row"><dt>i2i denoise</dt><dd>0.45 复刻 / 0.62 换姿势</dd></div>
+          <div class="spec-row"><dt>IPAdapter</dt><dd>plus_sdxl_vit-h · 0.85</dd></div>
+          <div class="spec-row"><dt>ControlNet</dt><dd>openpose_sdxl</dd></div>
+          <div class="spec-row"><dt>默认画幅</dt><dd>832 × 1216</dd></div>
+        </dl>
+      </aside>
+    </div>
+
+    <div class="verdict-box">
+      <p class="vb-label">结论先行 / VERDICT</p>
+      <ol>
+        <li><b>它解决的是控制力，不是画质。</b><span>IPAdapter 锁版型、ControlNet 锁姿势，这两件 Z-Image 至今没有对应物；但成品材质偏塑料。</span></li>
+        <li><b>136 条台账，中位 32.15 s。</b><span>耗时 22.1–68.7 s，24 步 cfg 5.0 全部一致；峰值显存反而比 Z-Image 低一个量级。</span></li>
+        <li><b>已退为对照基线。</b><span>人物立绘改用 Z-Image 后不再扩产，只在需要姿势控制或做 A/B 对照时调用。</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="doc">
+    <div class="doc-grid">
+      <div>
+
+        <article class="chapter" id="what">
+          <div class="ch-head"><span class="ch-num">01</span><h2>它是什么</h2></div>
+          <p>
+            Juggernaut-XL v9 是 SDXL 1.0 的社区微调版，目标是「3D 半写实照片感」。潜空间 4 通道，
+            意味着整套 SDXL 生态都能直接用：IPAdapter、ControlNet、LoRA、各种 refiner。
+          </p>
+          <p>
+            在本机的分工里，它承担两件事：<strong>用 IPAdapter 把服装版型和配色锚到参考图</strong>，
+            以及<strong>用 OpenPose ControlNet 改姿势</strong>。这两项是它相对 Z-Image 唯一的优势区。
+          </p>
+          <p>
+            代价在材质：皮肤高光收得太紧，织物缺少漫反射层次，近距离看有明确的塑料感——
+            这就是「更锐但更蜡」的来源。高频锐度是够的，但锐的是边缘，不是质感。
+          </p>
+        </article>
+
+        <article class="chapter" id="run">
+          <div class="ch-head"><span class="ch-num">02</span><h2>怎么跑</h2></div>
+          <p>日常出图走配方 A；要换姿势才上配方 B。两套都基于 i2i。</p>
+
+          <div class="recipe">
+            <div class="recipe-head"><span>NODE GRAPH</span><span>配方 A / 锁形体 + 锁画风</span></div>
+<pre>CheckpointLoaderSimple  <span class="k">Juggernaut-XL_v9_RunDiffusionPhoto_v2</span>
+LoadImage               [项目基准立绘]
+VAEEncode               denoise=<span class="k">0.45</span>
+IPAdapterUnifiedLoader  preset=PLUS (high strength)
+IPAdapterAdvanced       weight=<span class="k">0.85</span>  weight_type=linear
+CLIPTextEncode          positive / negative
+KSampler                steps=<span class="k">24</span> cfg=<span class="k">5.0</span> sampler=dpmpp_2m
+                        scheduler=karras denoise=<span class="k">0.45</span>
+VAEDecode → SaveImage
+
+<span class="c"># 配方 B / 换姿势：denoise 提到 0.62，IPAdapter 权重降到 0.55</span>
+<span class="c"># weight_type=style transfer，并接 ControlNet openpose（strength 1.0）</span></pre>
+          </div>
+
+          <ul>
+            <li><b>配方 A</b> —— i2i d0.45 + IPAdapter 0.85 linear。服装版型、配色、义体位置跟参考图走。</li>
+            <li><b>配方 B</b> —— i2i d0.62 + IPAdapter 0.55 style transfer + OpenPose。姿势跟骨架走。</li>
+            <li><b>采样</b> —— dpmpp_2m / karras，24 步 cfg 5.0 已稳定，再加步数收益很小。</li>
+          </ul>
+          <div class="callout">
+            <p><b>关键结论：</b>d0.45 时 ControlNet 拉不动姿势。想改姿势必须同时把 denoise 提到 0.62 并接受服装细节漂移，两者不能兼得。</p>
+          </div>
+        </article>
+
+        <article class="chapter" id="data">
+          <div class="ch-head"><span class="ch-num">03</span><h2>实测数据</h2></div>
+          <p>三处来源：生成台账的 136 条批量记录、A/B 对照批次的 4 条、8K 海报的 3 个 seed 原图。</p>
+
+          <div class="runs">
+            <div class="run">
+              <div class="run-top"><span class="run-name">生成台账 · 批量</span><span class="run-meta">136 条 · 24 步 cfg 5.0</span></div>
+              <div class="run-kv">
+                <div><dt>耗时 min–max</dt><dd>22.1 – 68.7<small>s</small></dd></div>
+                <div><dt>中位</dt><dd>32.15<small>s</small></dd></div>
+                <div><dt>判定</dt><dd>120<small>pass / 15 manual</small></dd></div>
+                <div><dt>模式</dt><dd>129<small>t2i / 7 i2i</small></dd></div>
+              </div>
+              <p class="run-note">画幅 896×896 共 119 条，另有 912×1216、1216×680、720×1024 · 仅 1 条 reject</p>
+            </div>
+
+            <div class="run">
+              <div class="run-top"><span class="run-name">A/B 对照批次</span><span class="run-meta">4 张 · 30 步 cfg 6.0 · d0.45 + IPA 0.85</span></div>
+              <div class="run-kv">
+                <div><dt>耗时 min–max</dt><dd>39.52 – 55.26<small>s</small></dd></div>
+                <div><dt>中位</dt><dd>44.67<small>s</small></dd></div>
+                <div><dt>最低空闲显存</dt><dd>36.28<small>GB</small></dd></div>
+                <div><dt>峰值（计算）</dt><dd>11.0 – 21.6<small>GB</small></dd></div>
+              </div>
+              <p class="run-note">与 Z-Image 同 prompt / 同 seed / 同画幅 · 30 步 + IPA 是这次对照的配置，比台账的 24 步更重</p>
+            </div>
+
+            <div class="run">
+              <div class="run-top"><span class="run-name">8K 海报 · 原图段</span><span class="run-meta">3 seed · 34 步 cfg 5.5 · 1024×1536</span></div>
+              <div class="run-kv">
+                <div><dt>耗时</dt><dd>62.8 / 71.1 / 91.1<small>s</small></dd></div>
+                <div><dt>峰值（记录值）</dt><dd>21.65 – 23.2<small>GB</small></dd></div>
+                <div><dt>采样</dt><dd>dpmpp_2m<small>/ karras</small></dd></div>
+                <div><dt>seed</dt><dd>3<small>个</small></dd></div>
+              </div>
+              <p class="run-note">这是放大链的前半段，终图耗时与显存见 <a href="scheme-latent.html" style="color:var(--accent)">方案 05</a></p>
+            </div>
+          </div>
+          <p class="table-note">
+            峰值 = vram_total 57.84 GB − 最低 vram_free。A/B 批次里 SDXL 的最低空闲显存为 36.28–46.80 GB，
+            对应峰值 11.0–21.6 GB；显存占用明显低于 Z-Image，但单张更慢。
+          </p>
+        </article>
+
+        <article class="chapter" id="cases">
+          <div class="ch-head"><span class="ch-num">04</span><h2>案例</h2></div>
+          <p>两张：一张与 Z-Image 同 prompt 的角色对照，一张 8K 海报的 1024×1536 原图。均为原始产物，仅转 WebP。</p>
+
+          <div class="cases">
+            <div class="case">
+              <figure><img src="assets/img/cmp-sdxl-xuanshu.webp" alt="SDXL 生成的原创科幻角色立绘" loading="lazy" width="900" height="1316"></figure>
+              <div class="case-foot">
+                <div class="case-top"><span>A/B 对照 · B 组</span><span>55.26 s</span></div>
+                <h4>玄枢 003 湘叁 · 同 prompt 对照</h4>
+                <div class="case-chips">
+                  <span class="chip">832×1216</span><span class="chip">30 步</span><span class="chip">cfg 6.0</span><span class="chip">d 0.45</span><span class="chip">seed 111</span>
+                </div>
+                <p style="font-size:12.5px;color:var(--text-3);margin:0 0 4px">与 Z-Image 用同一条 prompt、同一 seed；最低空闲 46.80 GB（峰值 11.04 GB）。</p>
+                <details class="prompt"><summary>PROMPT 原文</summary><pre>1girl, solo, long wavy light-brown hair, glowing purple eyes, white and silver futuristic armor dress with lace trim, glowing purple chest line, white lace thigh-high stockings, barefoot, serene expression, cold blue rim light, dark sci-fi background, floating pose, full body, 3D CG semi-realistic render, beautiful delicate face, refined symmetrical features, large expressive eyes, clear luminous skin with soft subsurface scattering, defined cheekbones, soft single-source key light with subtle cool rim light, shallow depth of field, cinematic color grade, ultra detailed</pre></details>
+              </div>
+            </div>
+
+            <div class="case">
+              <figure><img src="assets/img/case-sdxl-helmet.webp" alt="SDXL 生成的锈蚀战术头盔静物" loading="lazy" width="1000" height="1500"></figure>
+              <div class="case-foot">
+                <div class="case-top"><span>8K 链 · 原图</span><span>71.1 s</span></div>
+                <h4>锈蚀头盔 · 1024×1536 原图</h4>
+                <div class="case-chips">
+                  <span class="chip">1024×1536</span><span class="chip">34 步</span><span class="chip">cfg 5.5</span><span class="chip">peak 21.65 GB</span>
+                </div>
+                <p style="font-size:12.5px;color:var(--text-3);margin:0 0 4px">seed 774216391；同一 prompt 放大到 4096×6144 后用时 380.9 s。</p>
+                <details class="prompt"><summary>PROMPT 原文</summary><pre>dark cinematic macro photograph of a single abandoned rusted tactical helmet, centered in the frame, the helmet is small with wide empty black space above and below, its round curved glass visor dome is cracked and shattered with deep spiderweb fractures, inside the visor dome behind the glass a dense colony of glowing turquoise bioluminescent mushrooms and tiny luminous orchids grows, intense teal light glowing from deep inside the helmet and leaking out through every crack, corroded rusty metal plates, vines like blood vessels piercing the shell, thick moss and lichen texture on the metal surface, floating dust and glowing spores, soft volumetric rim light, pure black background, hyper detailed, sharp macro focus, 8k, unreal engine 5 render quality</pre></details>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="chapter" id="judge">
+          <div class="ch-head"><span class="ch-num">05</span><h2>判定</h2></div>
+          <p>按 2026-11-09 起的口径：只核对服装版型、配色材质、配饰、发型轮廓、体型，不看脸。</p>
+          <div class="checklist">
+            <div><b>服装版型 ✓</b>IPAdapter 0.85 能把甲片分块、腰线与裙摆层次锚住，d0.45 时最稳。</div>
+            <div><b>配色 ✓</b>主色与点缀色跟随参考图，紫色胸线发光位置稳定。</div>
+            <div class="no"><b>材质 ✗</b>皮肤与织物偏蜡、偏塑料；这是被替换的主因。</div>
+            <div><b>配饰 ✓</b>机械前臂、腰侧挂件在 i2i 下保持良好。</div>
+            <div class="no"><b>姿势控制 △</b>d0.45 时 ControlNet 无效；d0.62 才能拉动，但服装开始漂。</div>
+            <div><b>体型比例 ✓</b>九头身与四肢长度稳定，少见断肢。</div>
+            <div class="no"><b>速度 ✗</b>中位 32 s、8K 原图 60–90 s，落后 Z-Image 一档。</div>
+            <div class="no"><b>生态迁移 ✗</b>4 通道潜空间，权重与 LoRA 都无法迁移到 Z-Image。</div>
+          </div>
+        </article>
+
+        <article class="chapter" id="proscons">
+          <div class="ch-head"><span class="ch-num">06</span><h2>优缺点</h2></div>
+          <div class="proscons">
+            <div class="pc">
+              <h4>KEEP</h4>
+              <ul>
+                <li>唯一有 IPAdapter + ControlNet 的组合，版型与姿势控制最完整。</li>
+                <li>峰值显存低（A/B 批最低 11.0 GB），能和别的进程共存。</li>
+                <li>生态成熟，调试手段多，出问题容易定位。</li>
+                <li>做对照基线时，它的锐度能反衬 Z-Image 的高频上限。</li>
+              </ul>
+            </div>
+            <div class="pc cons">
+              <h4>DROP</h4>
+              <ul>
+                <li>材质蜡、塑料感明确，近距离不可交付。</li>
+                <li>24 步起步，单张成本约为 Z-Image 的 1.5 倍。</li>
+                <li>4 通道潜空间，跟 Z-Image 的 16 通道完全不互通。</li>
+                <li>姿势与版型只能二选一，d0.45 与 d0.62 之间没有中间解。</li>
+              </ul>
+            </div>
+          </div>
+        </article>
+
+        <article class="chapter" id="limits">
+          <div class="ch-head"><span class="ch-num">07</span><h2>没验证的 / 数据限制</h2></div>
+          <ul>
+            <li><b>步数扫描没做</b>：台账全部 24 步、A/B 全部 30 步、8K 原图 34 步，三套配置之间没有逐步对照，不能说哪一套最优。</li>
+            <li><b>cfg 只跑到 6.0</b>：没有 7.0 以上的记录，高 cfg 的过饱和边界未测。</li>
+            <li><b>refiner 未接</b>：SDXL base → refiner 的跨模型精修没有做过对照。</li>
+            <li><b>8K 链只在 SDXL 上跑过</b>：Z-Image + 4x-UltraSharp 的组合没有数据，不能推断。</li>
+            <li><b>A/B 只有一组入站</b>：批次共 5 个主体，因收录边界只公开玄枢 003 这一组。</li>
+          </ul>
+        </article>
+
+        <nav class="pager">
+          <a href="index.html"><span class="pg-l">← BACK</span><span class="pg-t">方案总览</span></a>
+          <a class="next" href="scheme-zimage-turbo.html"><span class="pg-l">NEXT / 02</span><span class="pg-t">Z-Image Turbo</span></a>
+        </nav>
+
+      </div>
+
+      <aside class="rail">
+        <h5>本页目录</h5>
+        <nav>
+          <a href="#what">01 它是什么</a>
+          <a href="#run">02 怎么跑</a>
+          <a href="#data">03 实测数据</a>
+          <a href="#cases">04 案例</a>
+          <a href="#judge">05 判定</a>
+          <a href="#proscons">06 优缺点</a>
+          <a href="#limits">07 数据限制</a>
+        </nav>
+        <div class="src">
+          <h5>数据出处</h5>
+          <p>
+            生成台账 · 136 条 Juggernaut<br>
+            A/B 对照 · 4 条（30 步 cfg6.0）<br>
+            8K 海报边车 · 3 seed 原图<br>
+            prompt 取自批量脚本原文
+          </p>
+          <div style="margin-top:10px">
+            <span class="tag">#SDXL</span><span class="tag">#IPAdapter</span>
+            <span class="tag">#ControlNet</span><span class="tag">#baseline</span>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-grid">
+    <div>
+      <h5>口径</h5>
+      <p>
+        所有耗时含采样到落盘；首次加载在表格内单独注明。显存为 ComfyUI 上报的 vram_free 最低值，
+        峰值由 vram_total 相减得到，属于计算值。取不到的值写 null，不按记忆补写。
+      </p>
+    </div>
+    <div>
+      <h5>合规</h5>
+      <p class="fine">
+        仅收录原创科幻角色的技术对照与静物样张。<br>
+        路径已脱敏，无个人账号与本机目录。
+      </p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

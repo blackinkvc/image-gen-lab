@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>latent 放大链 · 方案详情 · IMAGE.GEN LAB</title>
+<meta name="description" content="latent 放大链的实验记录：nearest-exact → refine 26 步 → 4x-UltraSharp → lanczos，4096×6144 成品的三个 seed 耗时与峰值显存，以及拖影被弃用的组合。">
+<link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-in">
+    <a class="brand" href="index.html"><b>IMAGE.GEN/LAB</b><span>本机生图实验档案</span></a>
+    <nav class="nav-links">
+      <a class="is-active" href="index.html">方案总览</a>
+      <a href="compare.html">横向对比</a>
+      <a href="gallery.html">案例库</a>
+      <a href="index.html#method">方法论</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="page-head">
+    <p class="crumb">
+      <a href="index.html">方案总览</a><span class="sep">/</span><span>05</span><span class="sep">/</span><span>latent 放大链</span>
+    </p>
+    <div class="ph-grid">
+      <div>
+        <div class="card-top" style="margin-bottom:18px;justify-content:flex-start;gap:14px">
+          <span class="status">单张交付</span>
+          <span class="mono" style="font-size:10px;color:var(--text-3);letter-spacing:.1em">8K 海报专用</span>
+        </div>
+        <h1 class="ph-title">latent 放大链</h1>
+        <p class="ph-sub">NEAREST-EXACT → REFINE 26 → 4X-ULTRASHARP → LANCZOS</p>
+        <p class="ph-lede">
+          唯一真正抬高细节密度的路径。它不是「把图放大」，而是<b>在放大后的潜空间里重新采样一遍</b>，
+          所以中高频都有新信息。代价是单张 6 分钟级，而且会把原图的瑕疵一起放大。
+        </p>
+      </div>
+
+      <aside class="spec-card">
+        <div class="spec-head"><span>SPEC</span><span>SDXL / COMFYUI</span></div>
+        <dl class="spec-body" style="margin:0">
+          <div class="spec-row"><dt>底座</dt><dd>Juggernaut-XL v9</dd></div>
+          <div class="spec-row"><dt>原图段</dt><dd>1024×1536 · 34 步</dd></div>
+          <div class="spec-row"><dt>第一跳</dt><dd>nearest-exact → 1536×2304</dd></div>
+          <div class="spec-row"><dt>refine</dt><dd>26 步 · cfg 5.2 · d0.45</dd></div>
+          <div class="spec-row"><dt>锐化</dt><dd>4x-UltraSharp → 6144×9216</dd></div>
+          <div class="spec-row"><dt>收口</dt><dd>lanczos → 4096×6144</dd></div>
+          <div class="spec-row"><dt>后期</dt><dd>上下 8% 渐变压黑</dd></div>
+          <div class="spec-row"><dt>终图耗时</dt><dd>160 – 381 s</dd></div>
+        </dl>
+      </aside>
+    </div>
+
+    <div class="verdict-box">
+      <p class="vb-label">结论先行 / VERDICT</p>
+      <ol>
+        <li><b>它是唯一能真提细节密度的链路。</b><span>refine 发生在放大后的潜空间，有新的像素预算承载细节；这与双采只碰最后 20% 有本质区别。</span></li>
+        <li><b>单张 6 分钟级，只适合主视觉。</b><span>三个 seed 终图为 160.2 / 355.0 / 380.9 s，其中两例峰值 21.5–21.8 GB，属于「一次跑一张」。</span></li>
+        <li><b>它会放大瑕疵。</b><span>飘动布料出拖影、袖口飘片——放大后低 denoise 不足以重建布料边界，这组组合已被弃用。</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="doc">
+    <div class="doc-grid">
+      <div>
+
+        <article class="chapter" id="what">
+          <div class="ch-head"><span class="ch-num">01</span><h2>它是什么</h2></div>
+          <p>
+            一条五段式管线：先在 1024×1536 出原图，在潜空间用 <span class="mono">nearest-exact</span>
+            放大到 1536×2304，然后<b>在放大后的潜空间里再跑 26 步 refine</b>，接着过
+            <span class="mono">4x-UltraSharp</span> 放大到 6144×9216，最后用 lanczos 落到交付尺寸 4096×6144。
+          </p>
+          <p>
+            关键不在放大算法，而在中间那次 refine。只做插值放大，细节密度不会增加，只是把已有的像素摊开；
+            在放大后的潜空间里重采样，模型才有空间去「补」中频与高频内容。这是它和
+            <a href="scheme-double.html" style="color:var(--accent)">双采</a>最本质的区别。
+          </p>
+          <p>
+            原图段与 refine 段用不同 seed（refine 用 seed+1），cfg 从 5.5 降到 5.2，避免放大后过饱和。
+            终图再由 PIL 做上下各 8% 的渐变压黑，不加文字，留作海报版式空间。
+          </p>
+        </article>
+
+        <article class="chapter" id="run">
+          <div class="ch-head"><span class="ch-num">02</span><h2>怎么跑</h2></div>
+          <div class="recipe">
+            <div class="recipe-head"><span>NODE GRAPH</span><span>8K 海报 / 五段链</span></div>
+<pre>CheckpointLoaderSimple  <span class="k">Juggernaut-XL_v9</span>
+EmptyLatentImage        <span class="k">1024 × 1536</span>
+KSampler                steps=<span class="k">34</span> cfg=<span class="k">5.5</span> dpmpp_2m / karras
+VAEDecode → SaveImage   <span class="c"># 原图落盘（_raw）</span>
+
+LatentUpscale           upscale_method=<span class="k">nearest-exact</span>
+                        width=<span class="k">1536</span> height=<span class="k">2304</span>
+KSampler                steps=<span class="k">26</span> cfg=<span class="k">5.2</span> denoise=<span class="k">0.45</span>
+                        seed=<span class="k">原 seed + 1</span>
+
+UpscaleModelLoader      <span class="k">4x-UltraSharp.pth</span>   <span class="c"># → 6144 × 9216</span>
+ImageScale              method=<span class="k">lanczos</span>  width=<span class="k">4096</span> height=<span class="k">6144</span>
+VAEDecode → SaveImage
+<span class="c"># post（PIL）：上下各 8% 渐变压黑，无文字</span></pre>
+          </div>
+          <p>
+            显存峰值出现在 4x-UltraSharp 之后的解码段，不在采样段。所以这条链的瓶颈是像素数，
+            不是步数——再加步数不会更难跑，再加尺寸会。
+          </p>
+        </article>
+
+        <article class="chapter" id="data">
+          <div class="ch-head"><span class="ch-num">03</span><h2>实测数据</h2></div>
+          <p>三个 seed 各跑一遍完整链路，原图与终图分别落盘并各自记录耗时。</p>
+
+          <div class="table-wrap">
+            <table class="data">
+              <thead>
+                <tr><th>seed</th><th>原图耗时</th><th>终图耗时</th><th>终图尺寸</th><th>峰值显存</th><th>备注</th></tr>
+              </thead>
+              <tbody>
+                <tr><td class="num">1983420577</td><td class="num">91.1 s</td><td class="num">355.0 s</td><td class="num">4096×6144</td><td class="num">21.76 GB</td><td class="dim">完整链路，含 refine</td></tr>
+                <tr><td class="num">774216391</td><td class="num">71.1 s</td><td class="num">380.9 s</td><td class="num">4096×6144</td><td class="num">21.50 GB</td><td class="dim">完整链路，含 refine</td></tr>
+                <tr><td class="num">512904683</td><td class="num">62.8 s</td><td class="num">160.2 s</td><td class="num">4096×6144</td><td class="num">3.33 GB</td><td class="dim">显存采样异常，见下注</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="table-note">
+            峰值取自边车 <span class="mono">vram_peak_used_bytes</span>，与「vram_total − 最低空闲」口径不同，数值略低。<br>
+            512904683 的 3.33 GB 与同链路其余两例相差一个量级，判定为采样丢失（2 s 间隔没抓到峰值），
+            <b>不作为该链路显存代表值</b>；其 160.2 s 同样明显偏短，原因未定位。
+          </p>
+
+          <div class="runs">
+            <div class="run">
+              <div class="run-top"><span class="run-name">原图段</span><span class="run-meta">3 seed · 34 步 cfg 5.5</span></div>
+              <div class="run-kv">
+                <div><dt>耗时 min–max</dt><dd>62.8 – 91.1<small>s</small></dd></div>
+                <div><dt>画幅</dt><dd>1024<small>× 1536</small></dd></div>
+                <div><dt>峰值</dt><dd>21.65 – 23.2<small>GB</small></dd></div>
+                <div><dt>模型</dt><dd>SDXL<small>Juggernaut</small></dd></div>
+              </div>
+              <p class="run-note">原图单独落盘，可复用；终图失败时不必重跑这一段</p>
+            </div>
+            <div class="run">
+              <div class="run-top"><span class="run-name">放大 + refine + 锐化</span><span class="run-meta">3 seed · refine 26 步 d0.45</span></div>
+              <div class="run-kv">
+                <div><dt>端到端耗时</dt><dd>160.2 – 380.9<small>s</small></dd></div>
+                <div><dt>净增量</dt><dd>可观<small>含解码</small></dd></div>
+                <div><dt>输出</dt><dd>4096<small>× 6144</small></dd></div>
+                <div><dt>峰值</dt><dd>21.5 – 21.8<small>GB（两例）</small></dd></div>
+              </div>
+              <p class="run-note">终图耗时含原图段；净增量 = 终图 − 原图，约 89–310 s</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="chapter" id="cases">
+          <div class="ch-head"><span class="ch-num">04</span><h2>案例</h2></div>
+          <p>同一 prompt、同一 seed 的前后对照：左边是 1024×1536 原图，右边是 4096×6144 终图。</p>
+
+          <div class="beforeafter">
+            <div class="ba">
+              <span class="ba-tag">BEFORE · 1024×1536</span>
+              <img src="assets/img/latent-before.webp" alt="头盔原图：1024×1536" loading="lazy" width="900" height="1350">
+              <div class="ba-cap">91.1 s · 34 步 · 峰值 22.80 GB</div>
+            </div>
+            <div class="ba">
+              <span class="ba-tag">AFTER · 4096×6144</span>
+              <img src="assets/img/latent-after.webp" alt="头盔终图：4096×6144" loading="lazy" width="900" height="1350">
+              <div class="ba-cap">355.0 s · refine 26 步 · 峰值 21.76 GB</div>
+            </div>
+          </div>
+          <p class="table-note">seed 1983420577 · 上传前统一压到 900 px 宽，细节对比请看原图区尺寸标注，不以网页缩略图判定锐度。</p>
+
+          <div class="cases" style="margin-top:22px">
+            <div class="case">
+              <figure><img src="assets/img/card-latent.webp" alt="4096×6144 头盔终图" loading="lazy" width="760" height="1140"></figure>
+              <div class="case-foot">
+                <div class="case-top"><span>终图</span><span>380.9 s</span></div>
+                <h4>锈蚀头盔 · seed 774216391</h4>
+                <div class="case-chips">
+                  <span class="chip">4096×6144</span><span class="chip">refine 26 步</span><span class="chip">d 0.45</span><span class="chip">peak 21.50 GB</span>
+                </div>
+                <details class="prompt"><summary>PROMPT 原文</summary><pre>dark cinematic macro photograph of a single abandoned rusted tactical helmet, centered in the frame, the helmet is small with wide empty black space above and below, its round curved glass visor dome is cracked and shattered with deep spiderweb fractures, inside the visor dome behind the glass a dense colony of glowing turquoise bioluminescent mushrooms and tiny luminous orchids grows, intense teal light glowing from deep inside the helmet and leaking out through every crack, corroded rusty metal plates, vines like blood vessels piercing the shell, thick moss and lichen texture on the metal surface, floating dust and glowing spores, soft volumetric rim light, pure black background, hyper detailed, sharp macro focus, 8k, unreal engine 5 render quality</pre></details>
+              </div>
+            </div>
+            <div class="case">
+              <figure><img src="assets/img/hero-helmet-8k.webp" alt="4096×6144 头盔终图之二" loading="lazy" width="1400" height="2100"></figure>
+              <div class="case-foot">
+                <div class="case-top"><span>终图</span><span>355.0 s</span></div>
+                <h4>锈蚀头盔 · seed 1983420577</h4>
+                <div class="case-chips">
+                  <span class="chip">4096×6144</span><span class="chip">原图 91.1 s</span><span class="chip">refine 26 步</span><span class="chip">peak 21.76 GB</span>
+                </div>
+                <p style="font-size:12.5px;color:var(--text-3);margin:0 0 4px">同一 prompt 的第二个 seed；refine 用 seed+1，构图不变，细节重采样。</p>
+                <details class="prompt"><summary>PROMPT 原文</summary><pre>dark cinematic macro photograph of a single abandoned rusted tactical helmet, centered in the frame, the helmet is small with wide empty black space above and below, its round curved glass visor dome is cracked and shattered with deep spiderweb fractures, inside the visor dome behind the glass a dense colony of glowing turquoise bioluminescent mushrooms and tiny luminous orchids grows, intense teal light glowing from deep inside the helmet and leaking out through every crack, corroded rusty metal plates, vines like blood vessels piercing the shell, thick moss and lichen texture on the metal surface, floating dust and glowing spores, soft volumetric rim light, pure black background, hyper detailed, sharp macro focus, 8k, unreal engine 5 render quality</pre></details>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="chapter" id="judge">
+          <div class="ch-head"><span class="ch-num">05</span><h2>判定</h2></div>
+          <div class="checklist">
+            <div><b>细节密度 ✓</b>放大后的潜空间有新预算，蕾丝、锈斑、孢子颗粒都有新信息，不是插值摊开。</div>
+            <div><b>主体结构 ✓</b>低 denoise 锁结构，头盔轮廓与裂纹走向不变。</div>
+            <div><b>可用性 ✓</b>三个 seed 全部落盘 4096×6144，可作海报底图。</div>
+            <div class="no"><b>飘动布料 ✗</b>裙摆、袖口出拖影——放大后 d0.45 不足以重建布料边界。</div>
+            <div class="no"><b>单张成本 ✗</b>终图 160–381 s，只能一张一张来。</div>
+            <div class="no"><b>会放大瑕疵 ✗</b>原图的接缝错误、多余线条会被一起锐化。</div>
+            <div><b>适用面 ✓</b>静物、金属、硬表面表现最好；复杂动态布料最差。</div>
+            <div class="no"><b>批量 ✗</b>不适合 ≥20 张的补图队列，成本不可接受。</div>
+          </div>
+        </article>
+
+        <article class="chapter" id="proscons">
+          <div class="ch-head"><span class="ch-num">06</span><h2>优缺点</h2></div>
+          <div class="proscons">
+            <div class="pc">
+              <h4>KEEP</h4>
+              <ul>
+                <li>唯一真正提升细节密度的路径，中高频都有新信息。</li>
+                <li>原图段可复用，终图失败不必从零重跑。</li>
+                <li>静物、金属、硬表面效果稳定，三个 seed 都可用。</li>
+                <li>输出尺寸可控，lanczos 收口能精确落到交付规格。</li>
+              </ul>
+            </div>
+            <div class="pc cons">
+              <h4>DROP</h4>
+              <ul>
+                <li>单张 3–6 分钟，不能进批量队列。</li>
+                <li>飘动布料出拖影，相关组合已弃用。</li>
+                <li>原图瑕疵会被放大，不能用来救废图。</li>
+                <li>显存随像素数增长，再加尺寸就危险。</li>
+              </ul>
+            </div>
+          </div>
+        </article>
+
+        <article class="chapter" id="limits">
+          <div class="ch-head"><span class="ch-num">07</span><h2>没验证的 / 数据限制</h2></div>
+          <ul>
+            <li><b>只在 SDXL 上跑过</b>：Z-Image + 4x-UltraSharp 的组合没有数据，不能按比例推断耗时。</li>
+            <li><b>拖影组合没有逐组参数</b>：裙摆拖影、袖口飘片的现象有记录，但当时没留下完整的参数与图，无法复现对照。</li>
+            <li><b>512904683 数据异常</b>：160.2 s 与 3.33 GB 都偏离同链路两例，原因未定位，不取平均。</li>
+            <li><b>refine 步数未扫描</b>：26 步是既定值，没做 20 / 32 步对照；d0.25 的细节衰减只有推断。</li>
+            <li><b>4x-UltraSharp 无替代对照</b>：没有和其他放大模型（如 ESRGAN 系列）比过。</li>
+          </ul>
+        </article>
+
+        <nav class="pager">
+          <a href="scheme-double.html"><span class="pg-l">← PREV / 04</span><span class="pg-t">双采 · 已放弃</span></a>
+          <a class="next" href="scheme-krea2.html"><span class="pg-l">NEXT / 06</span><span class="pg-t">Krea 2 · 未实测</span></a>
+        </nav>
+
+      </div>
+
+      <aside class="rail">
+        <h5>本页目录</h5>
+        <nav>
+          <a href="#what">01 它是什么</a>
+          <a href="#run">02 怎么跑</a>
+          <a href="#data">03 实测数据</a>
+          <a href="#cases">04 案例</a>
+          <a href="#judge">05 判定</a>
+          <a href="#proscons">06 优缺点</a>
+          <a href="#limits">07 数据限制</a>
+        </nav>
+        <div class="src">
+          <h5>数据出处</h5>
+          <p>
+            8K 海报边车 · 3 seed（raw + 终图）<br>
+            链路参数取自生成脚本原文<br>
+            显存为边车记录值，非计算值<br>
+            拖影结论来自实操记录
+          </p>
+          <div style="margin-top:10px">
+            <span class="tag">#latent-upscale</span><span class="tag">#4x-UltraSharp</span>
+            <span class="tag">#8K</span><span class="tag">#SDXL</span>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-grid">
+    <div>
+      <h5>口径</h5>
+      <p>
+        所有耗时含采样到落盘；首次加载在表格内单独注明。显存为 ComfyUI 上报的 vram_free 最低值，
+        峰值由 vram_total 相减得到，属于计算值。取不到的值写 null，不按记忆补写。
+      </p>
+    </div>
+    <div>
+      <h5>合规</h5>
+      <p class="fine">
+        仅收录原创科幻角色的技术对照与静物样张。<br>
+        路径已脱敏，无个人账号与本机目录。
+      </p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

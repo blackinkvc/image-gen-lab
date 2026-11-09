@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>双采 Base → Turbo · 已放弃 · IMAGE.GEN LAB</title>
+<meta name="description" content="双采（Z-Image Base → Turbo 同架构续采）的机理与否决证据：只重写采样轨迹最后 20–30%、OOM 分配 4.66 GB 失败、退出码 0xC0000005，以及每张 +120–190 秒的估算代价。">
+<link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-in">
+    <a class="brand" href="index.html"><b>IMAGE.GEN/LAB</b><span>本机生图实验档案</span></a>
+    <nav class="nav-links">
+      <a class="is-active" href="index.html">方案总览</a>
+      <a href="compare.html">横向对比</a>
+      <a href="gallery.html">案例库</a>
+      <a href="index.html#method">方法论</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="page-head">
+    <p class="crumb">
+      <a href="index.html">方案总览</a><span class="sep">/</span><span>04</span><span class="sep">/</span><span>双采 · Base → Turbo</span>
+    </p>
+    <div class="ph-grid">
+      <div>
+        <div class="card-top" style="margin-bottom:18px;justify-content:flex-start;gap:14px">
+          <span class="status dead">已放弃</span>
+          <span class="mono" style="font-size:10px;color:var(--text-3);letter-spacing:.1em">2026-11-09 拍板</span>
+        </div>
+        <h1 class="ph-title">双采 · Base → Turbo</h1>
+        <p class="ph-sub">SAME ARCH / LATENT PASS-THROUGH / d 0.25 – 0.35</p>
+        <p class="ph-lede">
+          Base 30 步定型，Turbo 8 步低 denoise 精修，中间不过 VAE。听起来像「先打草稿再勾线」，
+          实际是<b>只重写采样轨迹的最后 20–30%</b>——管得到纹理，管不到构图与版型。
+          而且本机两套权重同时常驻会直接 OOM。
+        </p>
+      </div>
+
+      <aside class="spec-card">
+        <div class="spec-head"><span>SPEC</span><span>已终止</span></div>
+        <dl class="spec-body" style="margin:0">
+          <div class="spec-row"><dt>链路</dt><dd>Base 30 步 → Turbo 8 步</dd></div>
+          <div class="spec-row"><dt>潜空间</dt><dd>16 通道，直通</dd></div>
+          <div class="spec-row"><dt>精修档</dt><dd>d 0.25 / 0.35</dd></div>
+          <div class="spec-row"><dt>A 组单采</dt><dd>41.67 s（含首载）</dd></div>
+          <div class="spec-row"><dt>B 组结果</dt><dd>OOM · 0xC0000005</dd></div>
+          <div class="spec-row"><dt>失败分配</dt><dd>4.66 GB</dd></div>
+          <div class="spec-row"><dt>单张增量</dt><dd>+120–190 s（估算）</dd></div>
+          <div class="spec-row"><dt>状态</dt><dd>已放弃，不再尝试</dd></div>
+        </dl>
+      </aside>
+    </div>
+
+    <div class="verdict-box">
+      <p class="vb-label">结论先行 / VERDICT</p>
+      <ol>
+        <li><b>它改的是高频，不是结构。</b><span>d0.25 只相当于 8 步里走 2 步，d0.35 约 2.8 步；构图、姿态、体块被 Base 锁死，续采修不回来。</span></li>
+        <li><b>本机装不下两套权重。</b><span>B 组 d0.25 在尝试再分配 4.66 GB 时 OOM，进程以 <span class="mono">0xC0000005</span> 退出；d0.35 档没轮到执行。</span></li>
+        <li><b>即便串行跑通也不划算。</b><span>估算每张 +120–190 s；按 167 张算多花 6–8.5 小时，换来的只是「高频更匀」，版型错误一张都修不回来。</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="doc">
+    <div class="doc-grid">
+      <div>
+
+        <article class="chapter" id="what">
+          <div class="ch-head"><span class="ch-num">01</span><h2>它是什么 · 机理</h2></div>
+          <p>
+            扩散采样在潜空间里做的是由粗到细的频率分解。同一段采样轨迹上，不同位置决定不同量级的信息：
+          </p>
+          <div class="table-wrap">
+            <table class="data">
+              <thead>
+                <tr><th>轨迹位置</th><th>决定什么</th><th>典型内容</th></tr>
+              </thead>
+              <tbody>
+                <tr><td class="num">前 1/4</td><td>低频</td><td class="dim">构图、主体位置、体块、姿态倾向、光照分布</td></tr>
+                <tr><td class="num">中段</td><td>中频</td><td class="dim">服装版型分块、甲片接缝、发束走向、肢体轮廓</td></tr>
+                <tr><td class="num">后 1/4</td><td>高频</td><td class="dim">材质颗粒、边缘锐度、皮肤纹理、接缝暗影</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p>
+            关键在于 <span class="mono">denoise</span> 的语义：<strong>它不是「补细节」，而是「从噪声水平往回走多远」</strong>。
+          </p>
+          <ul>
+            <li><span class="mono">denoise 0.25</span> ≈ 在 Base 输出的潜变量上加相当于 8 步里 2 步的噪声，再走 8 步。</li>
+            <li><span class="mono">denoise 0.35</span> ≈ 相当于 8 步里约 2.8 步。</li>
+          </ul>
+          <p>
+            所以这次「精修」<b>只重写了采样轨迹的最后 20%–30%</b>。这一段管的恰好是高频道；
+            低频与中频基本被 Base 的输出锁死。如果 Base 段把版型画错——比如把护腿画成高叉连体甲——
+            续采<b>修不回来</b>，因为错误发生在低频层，而续采只碰高频层。
+          </p>
+
+          <div class="callout">
+            <p><b>一句话：</b>这个组合不是「重建大结构再精修」，而是「大结构已经定死，只把最外面 20% 的细节又过了一遍」。</p>
+          </div>
+
+          <p><b>跨架构不成立（16 通道 ↔ 4 通道）。</b>Z-Image 用 16 通道潜空间，SDXL 是 4 通道，潜变量的形状、
+            通道语义、数值分布三者都不同，不存在线性变换可以把 16 通道张量喂进 4 通道模型而不丢信息。
+            想接就必须 VAE 解码 → 重新编码，那已经是图生图，不再是双采，还要吃两次重建损失。</p>
+        </article>
+
+        <article class="chapter" id="run">
+          <div class="ch-head"><span class="ch-num">02</span><h2>怎么跑</h2></div>
+          <p>实验设计是单进程内串起两段采样，潜空间直连，不落盘、不解码。</p>
+
+          <div class="recipe">
+            <div class="recipe-head"><span>NODE GRAPH</span><span>双采 / B 组（未跑通）</span></div>
+<pre><span class="c"># 第一段：Base 定型</span>
+UNETLoader      <span class="k">z_image_bf16</span>
+KSampler        steps=<span class="k">30</span> cfg=<span class="k">4.0</span> denoise=<span class="k">1.00</span>
+                <span class="c"># 输出 LATENT，不接 VAEDecode</span>
+
+<span class="c"># 第二段：Turbo 续采，潜空间直连</span>
+UNETLoader      <span class="k">z_image_turbo_bf16</span>
+KSampler        steps=<span class="k">8</span> cfg=<span class="k">1.0</span> denoise=<span class="k">0.25 / 0.35</span>
+                latent_image=<span class="k">第一段输出</span>
+VAEDecode → SaveImage
+
+<span class="c"># 对照：A 组只跑第二段（单采 Turbo）</span></pre>
+          </div>
+
+          <p>对照组 A 是单采 Turbo 8 步，用来确认「同一张图位、同一 prompt、同一 seed」的基线成本。</p>
+        </article>
+
+        <article class="chapter" id="data">
+          <div class="ch-head"><span class="ch-num">03</span><h2>实测数据</h2></div>
+          <p>两组各跑一次。A 组成功，B 组在采样前崩溃。</p>
+
+          <div class="runs">
+            <div class="run">
+              <div class="run-top"><span class="run-name">A 组 · 单采 Turbo（对照）</span><span class="run-meta">成功 · 1 张</span></div>
+              <div class="run-kv">
+                <div><dt>耗时</dt><dd>41.67<small>s</small></dd></div>
+                <div><dt>最低空闲显存</dt><dd>34.42<small>GB</small></dd></div>
+                <div><dt>峰值（计算）</dt><dd>23.42<small>GB</small></dd></div>
+                <div><dt>加载</dt><dd>含<small>首次</small></dd></div>
+              </div>
+              <p class="run-note">8 步 cfg 1.0 · 作为双采的基线，不代表常驻后的单张成本</p>
+            </div>
+
+            <div class="run">
+              <div class="run-top"><span class="run-name">B 组 · Base → Turbo d0.25</span><span class="run-meta">失败 · 0 张</span></div>
+              <div class="run-kv">
+                <div><dt>阶段</dt><dd>分配<small>阶段</small></dd></div>
+                <div><dt>失败请求</dt><dd>4.66<small>GB</small></dd></div>
+                <div><dt>退出码</dt><dd style="color:var(--bad)">0xC0000005</dd></div>
+                <div><dt>产出</dt><dd class="null">0 张</dd></div>
+              </div>
+              <p class="run-note">memory allocation failed with OOM · 进程随后以 0xC0000005 退出 · 无落盘文件</p>
+            </div>
+
+            <div class="run">
+              <div class="run-top"><span class="run-name">B 组 · d0.35</span><span class="run-meta">未执行</span></div>
+              <div class="run-kv">
+                <div><dt>状态</dt><dd class="na">未运行</dd></div>
+                <div><dt>耗时</dt><dd class="null">null</dd></div>
+                <div><dt>显存</dt><dd class="null">null</dd></div>
+                <div><dt>产出</dt><dd class="null">0 张</dd></div>
+              </div>
+              <p class="run-note">0.25 档先崩，0.35 档没有轮到；本页不把它写成「崩溃」，它只是没跑</p>
+            </div>
+          </div>
+
+          <div class="callout warn">
+            <p><b>OOM 不是「差一点」：</b>单采 Turbo 的峰值已是 22–24 GB，一套 Base UNET 同量级。
+              再叠一套权重后，剩余余量连一个中间张量都塞不下，所以才会在分配 4.66 GB 时直接失败。</p>
+          </div>
+        </article>
+
+        <article class="chapter" id="cases">
+          <div class="ch-head"><span class="ch-num">04</span><h2>案例</h2></div>
+          <p>没有案例。B 组没有产出任何图片，A 组单采图只是对照基线，不冒充双采结果。</p>
+          <div class="empty">
+            <span class="glyph">OOM</span>
+            <p>
+              分配 4.66 GB 失败 · 进程退出码 0xC0000005<br>
+              没有可展示的原始产物
+            </p>
+          </div>
+        </article>
+
+        <article class="chapter" id="judge">
+          <div class="ch-head"><span class="ch-num">05</span><h2>判定 · 为什么放弃</h2></div>
+          <p>两条独立理由，任何一条单独成立都足够否决：</p>
+          <div class="checklist">
+            <div class="no"><b>装不下 ✗</b>两套 UNET + 文本编码器同时常驻，UMA 池不够；B 组实测 OOM。</div>
+            <div class="no"><b>修不了 ✗</b>只重写最后 20–30%，构图与版型错误在低频层，续采碰不到。</div>
+            <div class="no"><b>太贵 ✗</b>串行装载每张 +120–190 秒（估算），167 张多花 6–8.5 小时。</div>
+            <div class="no"><b>收益窄 ✗</b>只改善材质颗粒与边缘，换不来分辨率，也换不来版型。</div>
+            <div><b>替代路径 ✓</b>要细节密度走 latent 放大链；要改版型就改卡重出。</div>
+            <div><b>状态 ✓</b>2026-11-09 起放弃，包括串行装载那套降内存改造。</div>
+          </div>
+          <p class="table-note">本页保留仅作为「为什么不做」的记录，不作为可选方案。</p>
+        </article>
+
+        <article class="chapter" id="proscons">
+          <div class="ch-head"><span class="ch-num">06</span><h2>代价与收益</h2></div>
+          <div class="proscons">
+            <div class="pc">
+              <h4>理论收益</h4>
+              <ul>
+                <li>高频道再采样一次：材质更匀、边缘更干净。（机制推断）</li>
+                <li>局部小结构（缝线、铆钉、发丝）重画一次。（机制推断）</li>
+                <li>潜空间直通，理论上不引入 VAE 往返的色偏。（结构事实）</li>
+              </ul>
+            </div>
+            <div class="pc cons">
+              <h4>实际代价</h4>
+              <ul>
+                <li>每张多 +120–190 秒（估算，未做端到端对照）。</li>
+                <li>167 张合计多 +6 到 +8.5 小时（估算，约 6 倍）。</li>
+                <li>多一份 UNET 常驻，本机直接 OOM（实测）。</li>
+                <li>构图、姿势、版型错误一张都修不回来（机制 + 021/025 两次失败验证）。</li>
+              </ul>
+            </div>
+          </div>
+          <p class="table-note">
+            代价拆解（全部为估算）：权重换入换出约 +50–100 s/张；Base 30 步约 100–120 s，相对 8 步多 +70–90 s；
+            续采 8 步与单采同量级，不计增量。合计 +120–190 s。
+          </p>
+        </article>
+
+        <article class="chapter" id="limits">
+          <div class="ch-head"><span class="ch-num">07</span><h2>没验证的 / 数据限制</h2></div>
+          <ul>
+            <li><b>d0.35 未验证</b>：0.25 档先 OOM，0.35 档没有执行，因此没有任何观测。</li>
+            <li><b>画面改动幅度无观测</b>：续采到底把画面改了多少，没有一张对照图，只有机制推断。</li>
+            <li><b>串行装载未做端到端</b>：先 encode、卸 TE、再装 Base 的方案没有实测，+50–100 s 是估算。</li>
+            <li><b>167 张的总增量是外推</b>：由单张估算值乘以张数，不是实测总和。</li>
+            <li><b>跨架构路径未测</b>：16 ↔ 4 通道的 VAE 往返图生图没有做过，只说明结构上不成立。</li>
+          </ul>
+        </article>
+
+        <nav class="pager">
+          <a href="scheme-zimage-base.html"><span class="pg-l">← PREV / 03</span><span class="pg-t">Z-Image Base</span></a>
+          <a class="next" href="scheme-latent.html"><span class="pg-l">NEXT / 05</span><span class="pg-t">latent 放大链</span></a>
+        </nav>
+
+      </div>
+
+      <aside class="rail">
+        <h5>本页目录</h5>
+        <nav>
+          <a href="#what">01 它是什么 · 机理</a>
+          <a href="#run">02 怎么跑</a>
+          <a href="#data">03 实测数据</a>
+          <a href="#cases">04 案例</a>
+          <a href="#judge">05 判定</a>
+          <a href="#proscons">06 代价与收益</a>
+          <a href="#limits">07 数据限制</a>
+        </nav>
+        <div class="src">
+          <h5>数据出处</h5>
+          <p>
+            双采实验 · A 组 1 张 / B 组失败<br>
+            机理分析文档 · 2026-11-09<br>
+            参数基线文档 · 第八节<br>
+            代价值全部标注「估算」
+          </p>
+          <div style="margin-top:10px">
+            <span class="tag">#double-sampling</span><span class="tag">#OOM</span>
+            <span class="tag">#rejected</span><span class="tag">#estimate</span>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-grid">
+    <div>
+      <h5>口径</h5>
+      <p>
+        所有耗时含采样到落盘；首次加载在表格内单独注明。显存为 ComfyUI 上报的 vram_free 最低值，
+        峰值由 vram_total 相减得到，属于计算值。取不到的值写 null，不按记忆补写。
+      </p>
+    </div>
+    <div>
+      <h5>合规</h5>
+      <p class="fine">
+        仅收录原创科幻角色的技术对照与静物样张。<br>
+        路径已脱敏，无个人账号与本机目录。
+      </p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

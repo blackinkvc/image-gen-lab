@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>案例库 · IMAGE.GEN LAB</title>
+<meta name="description" content="按方案筛选的案例图墙：Z-Image Turbo 的 t2i / i2i、SDXL 对照、latent 放大链前后对照，点开可看大图与 prompt 原文。">
+<link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-in">
+    <a class="brand" href="index.html"><b>IMAGE.GEN/LAB</b><span>本机生图实验档案</span></a>
+    <nav class="nav-links">
+      <a href="index.html">方案总览</a>
+      <a href="compare.html">横向对比</a>
+      <a class="is-active" href="gallery.html">案例库</a>
+      <a href="index.html#method">方法论</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="page-head">
+    <div class="ph-grid">
+      <div>
+        <p class="crumb"><a href="index.html">方案总览</a><span class="sep">/</span><span>GALLERY</span></p>
+        <h1 class="ph-title">案例库</h1>
+        <p class="ph-sub">10 IMAGES · 3 SCHEMES · 0 EXTERNAL ASSETS</p>
+        <p class="ph-lede">
+          只收能核对到原始记录的图：每张都对应一条耗时或边车记录。
+          点开任意一张看大图、参数与 prompt 原文。<b>不收录角色版权图、暴露度高的图与拿不准的图</b>，所以这里不会“满”。
+        </p>
+      </div>
+      <aside class="spec-card">
+        <div class="spec-head"><span>INDEX</span><span>UPDATED 2026-11-09</span></div>
+        <dl class="spec-body" style="margin:0">
+          <div class="spec-row"><dt>总张数</dt><dd class="num">10</dd></div>
+          <div class="spec-row"><dt>Z-Image Turbo</dt><dd class="num">6</dd></div>
+          <div class="spec-row"><dt>SDXL</dt><dd class="num">2</dd></div>
+          <div class="spec-row"><dt>latent 链</dt><dd class="num">2</dd></div>
+          <div class="spec-row"><dt>单图体积</dt><dd class="num">≤ 300 KB</dd></div>
+          <div class="spec-row"><dt>格式</dt><dd class="num">WebP</dd></div>
+        </dl>
+      </aside>
+    </div>
+  </section>
+
+  <section class="chapter" style="border-bottom:0;padding-bottom:0">
+    <div class="filter-bar">
+      <span class="fb-label">SCHEME</span>
+      <button class="f-btn is-on" data-filter="all">全部</button>
+      <button class="f-btn" data-filter="turbo">Z-Image Turbo</button>
+      <button class="f-btn" data-filter="sdxl">SDXL</button>
+      <button class="f-btn" data-filter="latent">latent 放大链</button>
+      <span class="f-count" id="count">10 / 10</span>
+    </div>
+    <div class="gallery" id="gallery"></div>
+  </section>
+
+</main>
+
+<div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="案例大图">
+  <button class="lb-close" id="lb-close" aria-label="关闭">×</button>
+  <div class="lb-in">
+    <figure class="lb-fig"><img id="lb-img" src="" alt=""></figure>
+    <div class="lb-side">
+      <h3 id="lb-title"></h3>
+      <p class="lb-meta" id="lb-meta"></p>
+      <h5>PROMPT</h5>
+      <pre id="lb-prompt"></pre>
+      <h5>NOTE</h5>
+      <p class="lb-meta" id="lb-note" style="margin-bottom:0"></p>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="wrap footer-grid">
+    <div>
+      <h5>口径</h5>
+      <p>
+        所有耗时含采样到落盘；首次加载在表格内单独注明。显存为 ComfyUI 上报的 vram_free 最低值，
+        峰值由 vram_total 相减得到，属于计算值。取不到的值写 null，不按记忆补写。
+      </p>
+    </div>
+    <div>
+      <h5>合规</h5>
+      <p class="fine">
+        仅收录原创科幻角色的技术对照与静物样张。<br>
+        路径已脱敏，无个人账号与本机目录。
+      </p>
+    </div>
+  </div>
+</footer>
+
+<script>
+const XS = `1girl, solo, long wavy light-brown hair, glowing purple eyes, white and silver futuristic armor dress with lace trim, glowing purple chest line, white lace thigh-high stockings, barefoot, serene expression, cold blue rim light, dark sci-fi background, floating pose, full body, 3D CG semi-realistic render, beautiful delicate face, refined symmetrical features, large expressive eyes, clear luminous skin with soft subsurface scattering, defined cheekbones, soft single-source key light with subtle cool rim light, shallow depth of field, cinematic color grade, ultra detailed`;
+
+const PI1 = `【镜头与姿势】中景，膝盖以上入画，正面略侧 15°；人物站立、低头操作身前全息控制台，左手按在触控键上，右手推开半透明数据面板。保持参考图中角色身份、发型与发色、体型比例、服装版型与配色（白色紧身背心、高腰罗纹长裤、腰侧机械挂件）、义体与配饰完全一致，不做服装改造。战舰舱室：哑光深灰金属舱壁、圆形舷窗深空、冷蓝地缝灯带；柔光雾面冷灰调。9:16 竖版，头顶到脚底完整入画，双手双脚齐全，四肢解剖正确。去除水印与平台 UI。`;
+
+const PI3 = `【镜头与姿势】9:16 全身，从头到脚完整入画；人物站在画面右侧大型舰装机械框架旁，身体朝左 3/4 侧，右手搭在框架边缘，重心落在右腿。保持参考图中角色身份、发型与发色、体型比例、服装版型与配色（白色紧身背心、高腰罗纹长裤、腰侧机械挂件）、义体与配饰完全一致，不做服装改造。战舰舱室：哑光深灰金属舱壁、圆形舷窗深空、冷蓝地缝灯带；柔光雾面冷灰调。9:16 竖版，头顶到脚底完整入画，双手双脚齐全，四肢解剖正确。去除水印与平台 UI。`;
+
+const XL = `1girl, solo, adult woman, long straight black hair tied in a high ponytail, glowing amber gold eyes with a thin halo ring in the iris, white high-collar techwear coat-dress with cyan LED trim and pleated skirt panels, black leggings, white knee-high armoured boots, segmented mechanical fingers on both hands, fair skin, cold blue rim light, dark sci-fi ship interior, floating pose, 3D CG semi-realistic render, highly detailed face, full body, best quality`;
+
+const HELMET = `dark cinematic macro photograph of a single abandoned rusted tactical helmet, centered in the frame, the helmet is small with wide empty black space above and below, its round curved glass visor dome is cracked and shattered with deep spiderweb fractures, inside the visor dome behind the glass a dense colony of glowing turquoise bioluminescent mushrooms and tiny luminous orchids grows, intense teal light glowing from deep inside the helmet and leaking out through every crack, corroded rusty metal plates, vines like blood vessels piercing the shell, thick moss and lichen texture on the metal surface, floating dust and glowing spores, soft volumetric rim light, pure black background, hyper detailed, sharp macro focus, 8k, unreal engine 5 render quality`;
+
+const ITEMS = [
+  {scheme:'turbo', tag:'Z-Image Turbo', title:'白甲裙 · 浮空全身', img:'assets/img/case-turbo-t2i.webp',
+   meta:'832×1216 · 8 步 · cfg 1.0 · seed 111 · 49.89 s',
+   note:'纯 t2i，首张含加载；最低空闲 34.86 GB（峰值 22.98 GB）。',
+   prompt:XS},
+  {scheme:'turbo', tag:'Z-Image Turbo', title:'湘叁 · seed 222', img:'assets/img/seed-222.webp',
+   meta:'832×1216 · 8 步 · cfg 1.0 · seed 222',
+   note:'与 seed 111 同 prompt，用于观察同一 prompt 下的姿态漂移。',
+   prompt:XS},
+  {scheme:'turbo', tag:'Z-Image Turbo', title:'湘叁 · seed 333', img:'assets/img/seed-333.webp',
+   meta:'832×1216 · 8 步 · cfg 1.0 · seed 333',
+   note:'与 seed 111 / 222 同 prompt；三张并看可见构图变化，服装版型保持一致。',
+   prompt:XS},
+  {scheme:'turbo', tag:'Z-Image Turbo', title:'010 舞拾 · 岗位作业中景', img:'assets/img/case-turbo-pilot1.webp',
+   meta:'832×1216 · 8 步 · d 0.55 · seed 7101 · 28.19 s',
+   note:'姿势句前置，服装与义体锁定；最低空闲 36.08 GB。',
+   prompt:PI1},
+  {scheme:'turbo', tag:'Z-Image Turbo', title:'010 舞拾 · 与舰装合影全身', img:'assets/img/case-turbo-pilot3.webp',
+   meta:'832×1216 · 8 步 · d 0.55 · seed 7103 · 361.43 s',
+   note:'同进程第 3 张，明显长尾；前两张为 28.19 / 90.87 s，原因未定位。',
+   prompt:PI3},
+  {scheme:'turbo', tag:'Z-Image Turbo', title:'011 玄翎 · denoise 0.45', img:'assets/img/case-turbo-i2i.webp',
+   meta:'832×1216 · 8 步 · d 0.45 · seed 2001 · 耗时未采集',
+   note:'身份锚定扫描的一档；该批次只落图，未写入耗时字段。',
+   prompt:XL},
+  {scheme:'sdxl', tag:'SDXL', title:'湘叁 · 同 prompt 对照', img:'assets/img/cmp-sdxl-xuanshu.webp',
+   meta:'832×1216 · 30 步 · cfg 6.0 · d 0.45 + IPA 0.85 · 55.26 s',
+   note:'与 Z-Image 同 prompt / 同 seed；i2i 带参考图，版型相似度不能单独归因于模型。',
+   prompt:XS},
+  {scheme:'sdxl', tag:'SDXL', title:'锈蚀头盔 · 8K 链原图', img:'assets/img/case-sdxl-helmet.webp',
+   meta:'1024×1536 · 34 步 · cfg 5.5 · seed 774216391 · 71.1 s',
+   note:'放大链的前半段，峰值 21.65 GB；终图见 latent 链两张。',
+   prompt:HELMET},
+  {scheme:'latent', tag:'latent 链', title:'锈蚀头盔 · 终图 4096×6144', img:'assets/img/hero-helmet-8k.webp',
+   meta:'4096×6144 · refine 26 步 · d 0.45 · seed 1983420577 · 355.0 s',
+   note:'原图 91.1 s + 放大精修；峰值 21.76 GB，取自边车记录值。',
+   prompt:HELMET},
+  {scheme:'latent', tag:'latent 链', title:'锈蚀头盔 · 终图 4096×6144', img:'assets/img/card-latent.webp',
+   meta:'4096×6144 · refine 26 步 · d 0.45 · seed 774216391 · 380.9 s',
+   note:'第三个 seed 的终图；峰值 21.50 GB。放大链会把原图瑕疵一起锐化。',
+   prompt:HELMET}
+];
+
+const gallery = document.getElementById('gallery');
+const countEl = document.getElementById('count');
+
+gallery.innerHTML = ITEMS.map((it, i) => `
+  <button class="tile" data-scheme="${it.scheme}" data-i="${i}" aria-label="查看 ${it.title}">
+    <figure><img src="${it.img}" alt="${it.title}" loading="lazy" width="900" height="1200"></figure>
+    <div class="tile-meta"><h4>${it.title}</h4><span class="tile-tag">${it.tag}</span></div>
+  </button>`).join('');
+
+let current = 'all';
+function applyFilter(f){
+  current = f;
+  let n = 0;
+  document.querySelectorAll('.tile').forEach(t => {
+    const on = f === 'all' || t.dataset.scheme === f;
+    t.classList.toggle('is-hidden', !on);
+    if (on) n++;
+  });
+  countEl.textContent = n + ' / ' + ITEMS.length;
+}
+document.querySelectorAll('.f-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.f-btn').forEach(x => x.classList.remove('is-on'));
+    b.classList.add('is-on');
+    applyFilter(b.dataset.filter);
+  });
+});
+
+const lb = document.getElementById('lb');
+const lbImg = document.getElementById('lb-img');
+function openLB(it){
+  lbImg.src = it.img;
+  lbImg.alt = it.title;
+  document.getElementById('lb-title').textContent = it.title;
+  document.getElementById('lb-meta').textContent = it.meta;
+  document.getElementById('lb-prompt').textContent = it.prompt;
+  document.getElementById('lb-note').textContent = it.note;
+  lb.classList.add('is-open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLB(){
+  lb.classList.remove('is-open');
+  document.body.style.overflow = '';
+  lbImg.src = '';
+}
+gallery.addEventListener('click', e => {
+  const t = e.target.closest('.tile');
+  if (t) openLB(ITEMS[+t.dataset.i]);
+});
+document.getElementById('lb-close').addEventListener('click', closeLB);
+lb.addEventListener('click', e => { if (e.target === lb) closeLB(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLB(); });
+</script>
+
+</body>
+</html>
