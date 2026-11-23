@@ -9,17 +9,41 @@
 </head>
 <body>
 
-<header class="nav">
-  <div class="nav-in">
-    <a class="brand" href="index.html"><b>IMAGE.GEN/LAB</b><span>本机生图实验档案</span></a>
-    <nav class="nav-links">
-      <a class="is-active" href="index.html">方案总览</a>
-      <a href="#judge">方法论</a>
-      <a aria-disabled="true" title="下一阶段">横向对比</a>
-      <a aria-disabled="true" title="下一阶段">案例库</a>
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="index.html">
+      <b>IMAGE.GEN/LAB</b><span class="sep">/</span><span class="sub">本机生图实验档案</span>
+    </a>
+    <nav class="mainnav">
+      <a class="is-active" href="index.html">总览</a>
+      <a href="compare.html">对比</a>
+      <a href="gallery.html">案例</a>
+      <a href="bench-h3.html">H3 实测</a>
+      <a href="index.html#method">方法论</a>
     </nav>
+    <div class="topbar-right">
+      <span class="meta">2026-11-23</span>
+      <a class="btn is-primary" href="index.html">← 总览</a>
+    </div>
   </div>
 </header>
+
+<div class="subnav">
+  <div class="subnav-in">
+    <span class="sn-label">Schemes</span>
+    <a href="scheme-sdxl.html">01 SDXL</a>
+    <a class="is-active" href="scheme-zimage-turbo.html">02 Z-Image Turbo</a>
+    <a href="scheme-zimage-base.html">03 Z-Image Base</a>
+    <a href="scheme-double.html">04 双采</a>
+    <a href="scheme-latent.html">05 放大链</a>
+    <a href="scheme-krea2.html">06 Krea 2</a>
+    <a href="scheme-moss.html">07 MOSS</a>
+    <span class="sn-sep"></span>
+    <a href="compare.html">横向对比</a>
+    <a href="gallery.html">案例库</a>
+    <a href="bench-h3.html">H3 实测</a>
+  </div>
+</div>
 
 <main class="wrap">
 
@@ -175,7 +199,7 @@ LoadImage → VAEEncode → KSampler(denoise=<span class="k">0.45 ~ 0.55</span>)
             <div class="bar-row"><span class="lbl">20 – 30 s</span><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><span class="val">80 张</span></div>
             <div class="bar-row"><span class="lbl">30 – 40 s</span><div class="bar-track"><div class="bar-fill" style="width:12.5%"></div></div><span class="val">10 张</span></div>
             <div class="bar-row"><span class="lbl">40 – 60 s</span><div class="bar-track"><div class="bar-fill" style="width:1.2%"></div></div><span class="val">1 张</span></div>
-            <div class="bar-row"><span class="lbl">≥ 60 s</span><div class="bar-track"><div class="bar-fill" style="width:10%;background:rgba(195,123,112,.7)"></div></div><span class="val">8 张</span></div>
+            <div class="bar-row"><span class="lbl">≥ 60 s</span><div class="bar-track"><div class="bar-fill" style="width:10%;background:var(--red)"></div></div><span class="val">8 张</span></div>
           </div>
           <p class="table-note">单张耗时分布，n=127，来自玄枢号批量边车 elapsed_s 字段。</p>
         </article>
@@ -301,14 +325,6 @@ LoadImage → VAEEncode → KSampler(denoise=<span class="k">0.45 ~ 0.55</span>)
           </ul>
         </article>
 
-        <nav class="pager">
-          <a href="index.html"><span class="pg-l">← BACK</span><span class="pg-t">方案总览</span></a>
-          <div style="background:var(--bg-2);padding:22px 24px;display:flex;flex-direction:column;gap:6px;text-align:right;align-items:flex-end">
-            <span class="pg-l">NEXT / 下一阶段</span>
-            <span class="pg-t" style="color:var(--text-3)">横向对比：同一 prompt 跨模型</span>
-          </div>
-        </nav>
-
       </div>
 
       <!-- 侧栏 -->
@@ -343,6 +359,11 @@ LoadImage → VAEEncode → KSampler(denoise=<span class="k">0.45 ~ 0.55</span>)
     </div>
   </section>
 
+<nav class="pager">
+  <a href="scheme-sdxl.html"><span class="pg-l">← PREV</span><span class="pg-t">01 SDXL · Juggernaut-XL v9</span></a>
+  <a class="next" href="scheme-zimage-base.html"><span class="pg-l">NEXT →</span><span class="pg-t">03 Z-Image Base</span></a>
+</nav>
+
 </main>
 
 <footer class="footer">
@@ -353,13 +374,33 @@ LoadImage → VAEEncode → KSampler(denoise=<span class="k">0.45 ~ 0.55</span>)
         所有耗时含采样到落盘；首次加载在表格内单独注明。显存为 ComfyUI 上报的 vram_free 最低值，
         峰值由 vram_total 相减得到，属于计算值。取不到的值写 null，不按记忆补写。
       </p>
+      <p class="fine">图片仅收录原创科幻角色的技术对照与静物样张；路径已脱敏，无个人账号与本机目录。</p>
     </div>
     <div>
-      <h5>合规</h5>
+      <h5>数据来源</h5>
       <p class="fine">
-        仅收录原创科幻角色的技术对照与静物样张。<br>
-        路径已脱敏，无个人账号与本机目录。
+        生成台账 · 142 行 × 26 列<br>
+        玄枢号候选边车 · 128 份<br>
+        A/B 对照 · 同 prompt / 同 seed / 同画幅<br>
+        估算值单独标注，不当作实测
       </p>
+    </div>
+    <div>
+      <h5>站点地图</h5>
+      <div class="footer-links">
+        <a href="index.html">方案总览</a>
+        <a href="compare.html">横向对比</a>
+        <a href="gallery.html">案例库</a>
+        <a href="bench-h3.html">H3 实测</a>
+        <a href="scheme-sdxl.html">01 SDXL</a>
+        <a href="scheme-zimage-turbo.html">02 Turbo</a>
+        <a href="scheme-zimage-base.html">03 Base</a>
+        <a href="scheme-double.html">04 双采</a>
+        <a href="scheme-latent.html">05 放大链</a>
+        <a href="scheme-krea2.html">06 Krea 2</a>
+        <a href="scheme-moss.html">07 MOSS</a>
+        <a href="index.html#method">方法论</a>
+      </div>
     </div>
   </div>
 </footer>

@@ -9,25 +9,55 @@
 </head>
 <body>
 
-<header class="nav">
-  <div class="nav-in">
-    <a class="brand" href="index.html"><b>IMAGE.GEN/LAB</b><span>本机生图实验档案</span></a>
-    <nav class="nav-links">
-      <a class="is-active" href="index.html">方案总览</a>
-      <a href="compare.html">横向对比</a>
-      <a href="gallery.html">案例库</a>
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="index.html">
+      <b>IMAGE.GEN/LAB</b><span class="sep">/</span><span class="sub">本机生图实验档案</span>
+    </a>
+    <nav class="mainnav">
+      <a class="is-active" href="index.html">总览</a>
+      <a href="compare.html">对比</a>
+      <a href="gallery.html">案例</a>
       <a href="bench-h3.html">H3 实测</a>
       <a href="#method">方法论</a>
     </nav>
+    <div class="topbar-right">
+      <span class="meta">2026-11-23</span>
+      <a class="btn is-primary" href="#schemes">7 套方案</a>
+    </div>
   </div>
 </header>
 
+<div class="subnav">
+  <div class="subnav-in">
+    <span class="sn-label">Schemes</span>
+    <a href="scheme-sdxl.html">01 SDXL</a>
+    <a href="scheme-zimage-turbo.html">02 Z-Image Turbo</a>
+    <a href="scheme-zimage-base.html">03 Z-Image Base</a>
+    <a href="scheme-double.html">04 双采</a>
+    <a href="scheme-latent.html">05 放大链</a>
+    <a href="scheme-krea2.html">06 Krea 2</a>
+    <a href="scheme-moss.html">07 MOSS</a>
+    <span class="sn-sep"></span>
+    <a href="compare.html">横向对比</a>
+    <a href="gallery.html">案例库</a>
+    <a href="bench-h3.html">H3 实测</a>
+  </div>
+</div>
+
 <main class="wrap">
 
-  <!-- HERO -->
+  <div class="statusline">
+    <span class="dot"></span>
+    <span>7 套方案 · 142 行台账 · 128 份边车 · 1 项否决</span>
+    <span class="m">ryzen ai max+ 395 / radeon 8060s</span>
+    <span class="right">update 2026-11-23</span>
+  </div>
+
+  <!-- 首屏 -->
   <section class="hero">
     <div class="hero-grid">
-      <div>
+      <div class="hero-copy">
         <p class="eyebrow">Lab record / 2026-11</p>
         <h1>一台机器，七套生图管线，<br>和它们各自的<em>实测账</em>。</h1>
         <p class="lede">
@@ -69,20 +99,47 @@
       <p class="sec-note">当前主力置顶 · 其余按采用时间排列<br>点击卡片进入完整实验记录</p>
     </div>
 
-    <div class="cards">
+    <div class="schemes">
+
+      <!-- 02 Z-Image Turbo（featured） -->
+      <article class="pcard feature">
+        <a class="pcard-link" href="scheme-zimage-turbo.html" aria-label="Z-Image Turbo 方案详情"></a>
+        <div class="pcard-media">
+          <img src="assets/img/card-turbo.webp" alt="Z-Image Turbo 生成的科幻角色立绘" loading="lazy" width="760" height="1111">
+          <span class="pcard-idx">02</span>
+        </div>
+        <div class="pcard-body">
+          <div class="pcard-top">
+            <span class="status main">当前主力</span>
+            <span class="chip mono">ZIMAGE-TURBO</span>
+          </div>
+          <h3>Z-Image Turbo</h3>
+          <p class="pcard-sub">16 通道潜空间 / Qwen3-4B TE / 8 步蒸馏</p>
+          <p class="pcard-verdict">
+            8 步、cfg 1.0，常驻后单张 <b>20–30 s</b>。人物立绘一律 i2i，<b>denoise 0.45–0.55</b>；
+            t2i 只用于换服饰、提清晰度、换背景。纯 t2i 三 seed 脸不收敛，不能补新角色。
+          </p>
+          <dl class="pcard-metrics">
+            <div><dt>边车中位耗时</dt><dd>29.2<small>s</small></dd></div>
+            <div><dt>步数 / cfg</dt><dd>8<small>/ 1.0</small></dd></div>
+            <div><dt>峰值显存</dt><dd>22.0<small>GB</small></dd></div>
+          </dl>
+          <span class="pcard-cta">查看完整实验记录 <i>→</i></span>
+        </div>
+      </article>
 
       <!-- 01 SDXL -->
-      <article class="card">
-        <a class="card-link" href="scheme-sdxl.html" aria-label="SDXL 方案详情"></a>
-        <div class="card-media">
+      <article class="pcard">
+        <a class="pcard-link" href="scheme-sdxl.html" aria-label="SDXL 方案详情"></a>
+        <div class="pcard-media">
           <img src="assets/img/card-sdxl.webp" alt="SDXL 生成的科幻角色立绘" loading="lazy" width="760" height="1111">
-          <span class="card-idx">01</span>
+          <span class="pcard-idx">01</span>
         </div>
-        <div class="card-body">
-          <div class="card-top"><h3>SDXL · Juggernaut-XL v9</h3><span class="status">历史基线</span></div>
-          <p class="sub">SDXL 1.0 / 4 通道潜空间 / IPAdapter</p>
-          <p class="verdict">更锐，但更<b>蜡</b>。细节硬、皮肤质感偏塑料，已被 Z-Image 取代，只保留作对照。</p>
-          <dl class="metrics">
+        <div class="pcard-body">
+          <div class="pcard-top"><h3>SDXL · Juggernaut-XL v9</h3><span class="status">历史基线</span></div>
+          <p class="pcard-sub">SDXL 1.0 / 4 通道潜空间 / IPAdapter</p>
+          <p class="pcard-verdict">更锐，但更<b>蜡</b>。细节硬、皮肤质感偏塑料，已被 Z-Image 取代，只保留作对照。</p>
+          <dl class="pcard-metrics">
             <div><dt>台账中位耗时</dt><dd>32.2<small>s</small></dd></div>
             <div><dt>步数 / cfg</dt><dd>24<small>/ 5.0</small></dd></div>
             <div><dt>台账</dt><dd>136<small>张</small></dd></div>
@@ -90,50 +147,21 @@
         </div>
       </article>
 
-      <!-- 02 Z-Image Turbo（featured） -->
-      <article class="card feature">
-        <a class="card-link" href="scheme-zimage-turbo.html" aria-label="Z-Image Turbo 方案详情"></a>
-        <div class="card-media">
-          <img src="assets/img/card-turbo.webp" alt="Z-Image Turbo 生成的科幻角色立绘" loading="lazy" width="760" height="1111">
-          <span class="card-idx">02</span>
-        </div>
-        <div class="card-body">
-          <div class="card-top"><span class="status main">当前主力</span><span class="mono" style="font-size:10px;color:var(--text-3)">ZIMAGE-TURBO</span></div>
-          <h3 style="font-size:22px">Z-Image Turbo</h3>
-          <p class="sub">16 通道潜空间 / Qwen3-4B TE / 8 步蒸馏</p>
-          <p class="verdict">
-            8 步、cfg 1.0，常驻后单张 <b>20–30 s</b>。人物立绘一律 i2i，<b>denoise 0.45–0.55</b>；
-            t2i 只用于换服饰、提清晰度、换背景。纯 t2i 三 seed 脸不收敛，不能补新角色。
-          </p>
-          <div class="mini-spec">
-            <div><span>采样</span><span>res_multistep / simple</span></div>
-            <div><span>画幅</span><span>832 × 1216</span></div>
-            <div><span>显存中位</span><span>22.0 GB</span></div>
-          </div>
-          <dl class="metrics">
-            <div><dt>边车中位耗时</dt><dd>29.2<small>s</small></dd></div>
-            <div><dt>步数 / cfg</dt><dd>8<small>/ 1.0</small></dd></div>
-            <div><dt>峰值显存</dt><dd>22.0<small>GB</small></dd></div>
-          </dl>
-          <span class="card-cta">查看完整实验记录 <i>→</i></span>
-        </div>
-      </article>
-
       <!-- 03 Z-Image Base -->
-      <article class="card">
-        <a class="card-link" href="scheme-zimage-base.html" aria-label="Z-Image Base 方案详情"></a>
-        <div class="card-media">
+      <article class="pcard">
+        <a class="pcard-link" href="scheme-zimage-base.html" aria-label="Z-Image Base 方案详情"></a>
+        <div class="pcard-media">
           <div class="blank">
             <span class="glyph">BASE</span>
             <span class="blank-note">30 步 / cfg 4.0 · 未单独留档</span>
           </div>
-          <span class="card-idx">03</span>
+          <span class="pcard-idx">03</span>
         </div>
-        <div class="card-body">
-          <div class="card-top"><h3>Z-Image Base</h3><span class="status">备选</span></div>
-          <p class="sub">同架构非蒸馏版 / 30 步 / cfg 4.0</p>
-          <p class="verdict">低频更准、代价是慢。只在双采实验里作为第一段跑过，<b>没有单独产出对照</b>。</p>
-          <dl class="metrics">
+        <div class="pcard-body">
+          <div class="pcard-top"><h3>Z-Image Base</h3><span class="status">备选</span></div>
+          <p class="pcard-sub">同架构非蒸馏版 / 30 步 / cfg 4.0</p>
+          <p class="pcard-verdict">低频更准、代价是慢。只在双采实验里作为第一段跑过，<b>没有单独产出对照</b>。</p>
+          <dl class="pcard-metrics">
             <div><dt>配置</dt><dd>30<small>/ 4.0</small></dd></div>
             <div><dt>独立耗时</dt><dd class="null">—</dd></div>
             <div><dt>权重</dt><dd>11.46<small>GiB</small></dd></div>
@@ -142,20 +170,20 @@
       </article>
 
       <!-- 04 双采 -->
-      <article class="card">
-        <a class="card-link" href="scheme-double.html" aria-label="双采方案详情"></a>
-        <div class="card-media">
+      <article class="pcard">
+        <a class="pcard-link" href="scheme-double.html" aria-label="双采方案详情"></a>
+        <div class="pcard-media">
           <div class="blank denied">
             <span class="glyph">OOM</span>
             <span class="blank-note">BASE → TURBO · d0.25 · 分配 4.66 GB 失败</span>
           </div>
-          <span class="card-idx">04</span>
+          <span class="pcard-idx">04</span>
         </div>
-        <div class="card-body">
-          <div class="card-top"><h3>双采 · Base → Turbo</h3><span class="status dead">已否决</span></div>
-          <p class="sub">同架构续采 / 潜空间直连 / 不 VAE 往返</p>
-          <p class="verdict">B 组 d0.25 在<b>分配 4.66 GB 时 OOM</b>，进程以 <b>0xC0000005</b> 退出；0.35 档没轮到跑。</p>
-          <dl class="metrics">
+        <div class="pcard-body">
+          <div class="pcard-top"><h3>双采 · Base → Turbo</h3><span class="status dead">已否决</span></div>
+          <p class="pcard-sub">同架构续采 / 潜空间直连 / 不 VAE 往返</p>
+          <p class="pcard-verdict">B 组 d0.25 在<b>分配 4.66 GB 时 OOM</b>，进程以 <b>0xC0000005</b> 退出；0.35 档没轮到跑。</p>
+          <dl class="pcard-metrics">
             <div><dt>A 组单采</dt><dd>41.67<small>s</small></dd></div>
             <div><dt>失败分配</dt><dd>4.66<small>GB</small></dd></div>
             <div><dt>退出码</dt><dd>0xC0000005</dd></div>
@@ -164,17 +192,17 @@
       </article>
 
       <!-- 05 latent 放大链 -->
-      <article class="card">
-        <a class="card-link" href="scheme-latent.html" aria-label="latent 放大链方案详情"></a>
-        <div class="card-media">
+      <article class="pcard">
+        <a class="pcard-link" href="scheme-latent.html" aria-label="latent 放大链方案详情"></a>
+        <div class="pcard-media">
           <img src="assets/img/card-latent.webp" alt="latent 放大链产出的 8K 头盔海报" loading="lazy" width="760" height="1140">
-          <span class="card-idx">05</span>
+          <span class="pcard-idx">05</span>
         </div>
-        <div class="card-body">
-          <div class="card-top"><h3>latent 放大链</h3><span class="status">单张交付</span></div>
-          <p class="sub">nearest-exact → refine → 4x-UltraSharp → lanczos</p>
-          <p class="verdict">唯一真正抬高细节密度的路径。代价是<b>单张 6 分钟级</b>，且会放大瑕疵——飘动布料出拖影。</p>
-          <dl class="metrics">
+        <div class="pcard-body">
+          <div class="pcard-top"><h3>latent 放大链</h3><span class="status">单张交付</span></div>
+          <p class="pcard-sub">nearest-exact → refine → 4x-UltraSharp → lanczos</p>
+          <p class="pcard-verdict">唯一真正抬高细节密度的路径。代价是<b>单张 6 分钟级</b>，且会放大瑕疵——飘动布料出拖影。</p>
+          <dl class="pcard-metrics">
             <div><dt>终图耗时</dt><dd>355–381<small>s</small></dd></div>
             <div><dt>成品</dt><dd>4096×6144</dd></div>
             <div><dt>峰值显存</dt><dd>21.7<small>GB</small></dd></div>
@@ -183,20 +211,20 @@
       </article>
 
       <!-- 06 Krea 2 -->
-      <article class="card">
-        <a class="card-link" href="scheme-krea2.html" aria-label="Krea 2 方案详情"></a>
-        <div class="card-media">
+      <article class="pcard">
+        <a class="pcard-link" href="scheme-krea2.html" aria-label="Krea 2 方案详情"></a>
+        <div class="pcard-media">
           <div class="blank">
             <span class="glyph">KREA-2</span>
             <span class="blank-note">权重已就位 · 0 条产出记录</span>
           </div>
-          <span class="card-idx">06</span>
+          <span class="pcard-idx">06</span>
         </div>
-        <div class="card-body">
-          <div class="card-top"><h3>Krea 2</h3><span class="status pending">未实测</span></div>
-          <p class="sub">RAW 52 步 / Turbo 8 步 / fp8_scaled</p>
-          <p class="verdict">12.24 GB 主模型与 4.88 GB TE 已就位，本批 A/B <b>没有产出可用记录</b>，参数留档待补。</p>
-          <dl class="metrics">
+        <div class="pcard-body">
+          <div class="pcard-top"><h3>Krea 2</h3><span class="status pending">未实测</span></div>
+          <p class="pcard-sub">RAW 52 步 / Turbo 8 步 / fp8_scaled</p>
+          <p class="pcard-verdict">12.24 GB 主模型与 4.88 GB TE 已就位，本批 A/B <b>没有产出可用记录</b>，参数留档待补。</p>
+          <dl class="pcard-metrics">
             <div><dt>既定步数</dt><dd>52<small>/ 8</small></dd></div>
             <div><dt>权重</dt><dd>12.24<small>GB</small></dd></div>
             <div><dt>产出</dt><dd>0<small>条</small></dd></div>
@@ -205,20 +233,20 @@
       </article>
 
       <!-- 07 MOSS -->
-      <article class="card">
-        <a class="card-link" href="scheme-moss.html" aria-label="MOSS-Image 方案详情"></a>
-        <div class="card-media">
+      <article class="pcard">
+        <a class="pcard-link" href="scheme-moss.html" aria-label="MOSS-Image 方案详情"></a>
+        <div class="pcard-media">
           <div class="blank">
             <span class="glyph">MOSS</span>
             <span class="blank-note">5B DiT + 9B TE · 正在实测</span>
           </div>
-          <span class="card-idx">07</span>
+          <span class="pcard-idx">07</span>
         </div>
-        <div class="card-body">
-          <div class="card-top"><h3>MOSS-Image</h3><span class="status test">测试中</span></div>
-          <p class="sub">5B 单流 DiT / Qwen3.5-9B TE / FLUX.2 VAE</p>
-          <p class="verdict">50 步、双前向。占位：参数与显存口径已写死，<b>实测数据回来后补</b>，不预填推断值。</p>
-          <dl class="metrics">
+        <div class="pcard-body">
+          <div class="pcard-top"><h3>MOSS-Image</h3><span class="status test">测试中</span></div>
+          <p class="pcard-sub">5B 单流 DiT / Qwen3.5-9B TE / FLUX.2 VAE</p>
+          <p class="pcard-verdict">50 步、双前向。占位：参数与显存口径已写死，<b>实测数据回来后补</b>，不预填推断值。</p>
+          <dl class="pcard-metrics">
             <div><dt>采样</dt><dd>50<small>步</small></dd></div>
             <div><dt>规模</dt><dd>5B<small>DiT</small></dd></div>
             <div><dt>数据</dt><dd class="null">—</dd></div>
@@ -227,22 +255,47 @@
       </article>
 
     </div>
+  </section>
 
-    <div class="readme-strip">
+  <!-- 其他入口 -->
+  <section class="section">
+    <div class="sec-head">
       <div>
-        <p class="sec-kicker" style="margin-bottom:6px">Read me</p>
-        <h3>数字怎么来的</h3>
-        <p>台账、边车、实验日志三处互校。取不到的值写 <span class="mono">null</span>，结构上不存在的写 <span class="mono">"n/a"</span>，不按记忆补写。</p>
+        <p class="sec-kicker">02 / More</p>
+        <h2 class="sec-title">其他入口</h2>
       </div>
-      <a href="#method" class="readme-link">判定与硬件口径 <i>↓</i></a>
+      <p class="sec-note">同条件对照 · 原始产物 · H3 视频实测</p>
+    </div>
+    <div class="routes">
+      <article class="route">
+        <a class="route-link" href="compare.html" aria-label="横向对比"></a>
+        <span class="route-k">Compare</span>
+        <h3>横向对比</h3>
+        <p>同一 prompt、同一 seed 下 Z-Image Turbo 与 SDXL 的并排对照，含耗时、显存与这组对照本身的限制。</p>
+        <span class="route-arrow">进入对比 →</span>
+      </article>
+      <article class="route">
+        <a class="route-link" href="gallery.html" aria-label="案例库"></a>
+        <span class="route-k">Gallery</span>
+        <h3>案例库</h3>
+        <p>按方案筛选的 10 张原始产物，点开可看大图、参数与 prompt 原文，只收能核对到记录的图。</p>
+        <span class="route-arrow">进入案例库 →</span>
+      </article>
+      <article class="route">
+        <a class="route-link" href="bench-h3.html" aria-label="H3 实测看板"></a>
+        <span class="route-k">Bench / H3</span>
+        <h3>H3 实测</h3>
+        <p>MiniMax H3 的生图与生视频实测、48+16 → 32+32 内存调整、GGUF 否决判定与看片总结。</p>
+        <span class="route-arrow">进入看板 →</span>
+      </article>
     </div>
   </section>
 
-  <!-- 方法论摘要 -->
+  <!-- 方法论 -->
   <section class="section" id="method">
     <div class="sec-head">
       <div>
-        <p class="sec-kicker">02 / Method</p>
+        <p class="sec-kicker">03 / Method</p>
         <h2 class="sec-title">这份档案怎么读</h2>
       </div>
       <p class="sec-note">判定口径 / 数据三态 / 硬件口径<br>每个详情页都按这一套写</p>
@@ -253,7 +306,7 @@
         <p>
           真值直接记录；本该有值但当时没采到写 <code>null</code> 并登记进 unknown；
           管线结构上不存在该环节写 <code>"n/a"</code>（例如 KSampler 没有 shift、t2i 没有参考图）。
-          本页所有"—"均为未采集，不是 0。
+          本页所有「—」均为未采集，不是 0。
         </p>
       </div>
       <div class="m-item">
@@ -284,7 +337,7 @@
         个人实验档案，不是选型指南。同一台机器、同一批参考图、串行出图；
         所有耗时包含模型常驻后的真实排队成本，首次加载单独注明。
       </p>
-      <p>
+      <p class="fine">
         图片仅收录原创科幻角色的技术对照与静物样张。不收录可能涉及成人向、露骨或明确版权角色的图。
       </p>
     </div>
@@ -296,7 +349,24 @@
         8K 海报实验日志 · 3 seed（raw + 终图耗时与峰值）<br>
         A/B 对照 · 同一 prompt / 同 seed / 同画幅
       </p>
-      <p class="fine" style="margin-top:14px">路径已脱敏 · 无个人账号与本机目录</p>
+      <p class="fine">路径已脱敏 · 无个人账号与本机目录</p>
+    </div>
+    <div>
+      <h5>站点地图</h5>
+      <div class="footer-links">
+        <a href="index.html">方案总览</a>
+        <a href="compare.html">横向对比</a>
+        <a href="gallery.html">案例库</a>
+        <a href="bench-h3.html">H3 实测</a>
+        <a href="scheme-sdxl.html">01 SDXL</a>
+        <a href="scheme-zimage-turbo.html">02 Turbo</a>
+        <a href="scheme-zimage-base.html">03 Base</a>
+        <a href="scheme-double.html">04 双采</a>
+        <a href="scheme-latent.html">05 放大链</a>
+        <a href="scheme-krea2.html">06 Krea 2</a>
+        <a href="scheme-moss.html">07 MOSS</a>
+        <a href="#method">方法论</a>
+      </div>
     </div>
   </div>
 </footer>
