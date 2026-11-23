@@ -1,5 +1,8 @@
 # image-gen-lab
 
+> **在线站点**：<https://blackinkvc.github.io/image-gen-lab/>  
+> **H3 实测看板**：<https://blackinkvc.github.io/image-gen-lab/bench-h3.html>
+
 本机生图方案的实验档案站。不是选型指南，也不是作品集：记录每套管线**怎么配、跑多快、吃多少显存、在什么图上翻车、为什么被换掉**。
 
 同一台机器、同一批参考图、串行出图。所有耗时与显存都能回到台账、边车或实验日志；取不到的值写 `null`，结构上不存在的写 `"n/a"`，估算值单独标注。
@@ -18,6 +21,7 @@
 | `scheme-moss.html` | MOSS-Image —— 测试中，权重下载阶段 |
 | `compare.html` | 横向对比：同 prompt / 同 seed 并排 + 对照表 |
 | `gallery.html` | 案例库：按方案筛选的图墙，点开看大图与 prompt |
+| `bench-h3.html` | H3 实测看板：内存分工、H3-Image、视频样片耗时、GGUF 判定与崩溃点 |
 
 方法论不单独建页：判定口径、三态规则、硬件口径集中在首页 `#method`，各详情页按同一套写。
 
@@ -45,8 +49,10 @@
 ├── scheme-moss.html            # 07 MOSS-Image（测试中）
 ├── compare.html                # 横向对比
 ├── gallery.html                # 案例库（筛选 + 灯箱）
+├── bench-h3.html               # H3 实测看板（浅色独立样式）
 ├── assets/
 │   ├── css/site.css            # 全站共用样式（系统字体，无 CDN）
+│   ├── css/bench.css           # H3 看板的浅色监控台样式
 │   └── img/                    # WebP，单张 ≤ 300 KB
 └── README.md
 ```
@@ -96,7 +102,7 @@ python -m http.server 8000
 ## 设计与技术约束
 
 - 无外部 CDN、无 Web 字体、无框架；只依赖系统字体与原生 HTML/CSS。
-- 深色底、等宽数字、单一强调色（琥珀）。
+- 主站深色底、等宽数字、单一强调色（琥珀）；`bench-h3.html` 为独立的浅色监控台样式（`bench.css`），不加载主站样式。
 - 图片统一 WebP，质量按体积梯度控制，单张 ≤ 300 KB。
 - 响应式：桌面三列卡片墙，移动端单列，390 px 宽度无横向溢出。
 
