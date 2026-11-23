@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>原理 · AI.TRACK</title>
+<meta name="description" content="AI 原理速查：prefill/decode、注意力、训练三段、推理模型、MoE、扩散模型、量化蒸馏与评估。">
+<link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="index.html">
+      <b>AI.TRACK</b><span class="sep">/</span><span class="sub">AI 发展监控台</span>
+    </a>
+    <nav class="mainnav">
+      <a href="index.html">首页</a>
+      <a href="models.html">基模</a>
+      <a href="agents.html">Agent</a>
+      <a href="companies.html">公司</a>
+      <a href="hardware.html">硬件</a>
+      <a href="apps.html">应用</a>
+      <a class="is-active" href="principles.html">原理</a>
+      <a href="history.html">历史</a>
+      <a href="local.html">本地部署</a>
+      <a href="cases.html">实例</a>
+    </nav>
+    <div class="topbar-right">
+      <span class="meta">2026-11-23</span>
+      <a class="btn is-primary" href="hardware.html">算力账</a>
+    </div>
+  </div>
+</header>
+
+<div class="subnav">
+  <div class="subnav-in">
+    <span class="sn-label">Principles</span>
+    <a href="#inference">推理账</a>
+    <a href="#attention">注意力</a>
+    <a href="#training">训练</a>
+    <a href="#reasoning">推理模型</a>
+    <a href="#moe">MoE</a>
+    <a href="#diffusion">扩散</a>
+    <a href="#quant">量化</a>
+    <a href="#eval">评估</a>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <p class="crumb"><a href="index.html">首页</a><span class="sep">/</span><span>06</span><span class="sep">/</span><span>原理</span></p>
+
+  <section class="page-head">
+    <div class="ph-grid">
+      <div>
+        <div class="card-top" style="margin-bottom:14px;justify-content:flex-start;gap:10px">
+          <span class="chip">速查</span>
+          <span class="chip green">公式 + 直觉</span>
+          <span class="chip orange">8 章</span>
+        </div>
+        <h1 class="ph-title">原理</h1>
+        <p class="ph-sub">HOW IT WORKS · 8 SECTIONS</p>
+        <p class="ph-lede">
+          不追求教科书式完整，只回答监控时最常遇到的那几个「为什么」：
+          为什么长上下文贵、为什么量化能提速、为什么 MoE 显存按总参数算、
+          为什么扩散模型加 ControlNet 就能锁姿势。
+        </p>
+      </div>
+      <aside class="spec-card">
+        <div class="spec-head"><span>SCOPE</span><span>SIMPLIFIED</span></div>
+        <dl class="spec-body" style="margin:0">
+          <div class="spec-row"><dt>覆盖</dt><dd>LLM / 扩散</dd></div>
+          <div class="spec-row"><dt>公式</dt><dd>数量级口径</dd></div>
+          <div class="spec-row"><dt>推导</dt><dd>省略常数项</dd></div>
+          <div class="spec-row"><dt>适用</dt><dd>估算与排障</dd></div>
+          <div class="spec-row"><dt>不适用</dt><dd>精确性能建模</dd></div>
+        </dl>
+      </aside>
+    </div>
+  </section>
+
+  <section class="doc">
+    <article class="chapter" id="inference">
+      <div class="ch-head"><span class="ch-num">01</span><h2>一次生成到底在算什么</h2></div>
+      <p>
+        自回归生成分两段。<b>Prefill</b> 把整段输入一次性送进模型，所有 token 并行算，
+        吃的是算力；<b>decode</b> 每次只生成一个 token，却要把全部权重从显存读一遍，吃的是带宽。
+      </p>
+
+      <div class="recipe">
+        <div class="recipe-head"><span>INFERENCE</span><span>数量级估算</span></div>
+<pre>prefill FLOPs ≈ 2 × N_params × N_tokens
+decode 每 token 读权重 ≈ N_params × bytes_per_param
+理论 tok/s ≈ 带宽 ÷ (N_params × bytes_per_param)
+
+KV Cache ≈ 2 × layers × kv_heads × head_dim × seq × batch × bytes
+  （2 = K 和 V；GQA 会让 kv_heads 远小于注意力头数）</pre>
+      </div>
+
+      <p>
+        这解释了三件事：第一，上下文越长，KV Cache 越占显存，能并发的请求越少；
+        第二，量化主要加速 decode，因为读的字节变少了；
+        第三，统一内存机器能装下大模型，但 decode 速度被带宽卡住。
+      </p>
+    </article>
+
+    <article class="chapter" id="attention">
+      <div class="ch-head"><span class="ch-num">02</span><h2>Transformer 与注意力</h2></div>
+      <p>
+        每个 token 生成 Q、K、V 三个向量，用 Q 和所有历史 K 做点积得到权重，再对 V 加权求和。
+        causal mask 保证只能看前面，这就是「自回归」。
+      </p>
+
+      <div class="recipe">
+        <div class="recipe-head"><span>ATTENTION</span><span>单头，省略 batch</span></div>
+<pre>Attention(Q, K, V) = softmax( Q·Kᵀ / √d_k ) · V
+
+复杂度：O(n² · d)     n = 序列长度
+长上下文成本主要来自这里，而不是参数规模</pre>
+      </div>
+
+      <p>
+        工程上有三种常见优化：<b>FlashAttention</b> 不改变数学结果，只减少显存读写；
+        <b>GQA / MQA</b> 让多个 Query 共享少量 KV 头，直接压缩 KV Cache；
+        <b>稀疏注意力</b>只算部分位置，用近似换长度。三者可以叠加。
+      </p>
+    </article>
+
+    <article class="chapter" id="training">
+      <div class="ch-head"><span class="ch-num">03</span><h2>训练分三段</h2></div>
+
+      <div class="mini-grid">
+        <div class="mini on">
+          <h4>① 预训练 <span>Pretrain</span></h4>
+          <p>在万亿级 token 上做下一词预测，学到语言与世界知识。决定能力上限，成本最高。</p>
+        </div>
+        <div class="mini on">
+          <h4>② 监督微调 <span>SFT</span></h4>
+          <p>用人工或模型生成的高质量对话，把「补全器」变成「助手」。</p>
+        </div>
+        <div class="mini on">
+          <h4>③ 偏好优化 <span>RLHF / DPO</span></h4>
+          <p>用人类偏好排序调整输出风格：更有用、更少有害内容、更愿意承认不知道。</p>
+        </div>
+        <div class="mini warn">
+          <h4>④ 可验证强化学习 <span>RLVR</span></h4>
+          <p>数学、代码这类能自动判对错的领域，直接用结果奖励训练推理链，是 2025 年的主要增量。</p>
+        </div>
+      </div>
+
+      <p class="table-note">
+        「后训练」这个词通常指 ②③④ 全部。它不增加知识，只改变模型使用知识的方式。
+      </p>
+    </article>
+
+    <article class="chapter" id="reasoning">
+      <div class="ch-head"><span class="ch-num">04</span><h2>推理模型与 test-time compute</h2></div>
+      <p>
+        推理模型把「想」变成显式的 token：先写中间步骤，再给答案。训练时用 RL 奖励正确答案，
+        推理时用更多 token 换更高正确率。
+      </p>
+
+      <div class="recipe">
+        <div class="recipe-head"><span>TRADE-OFF</span><span>直觉口径</span></div>
+<pre>总成本 ≈ 输入 token + 思考 token + 输出 token
+正确率随思考长度上升，但边际收益递减
+超过某个长度后，错误会开始自我强化</pre>
+      </div>
+
+      <p>
+        所以「推理模型更强」是有条件的：题目越难、越可验证，收益越大；
+        简单任务上，它只是更贵、更慢。GPT-5 把快慢思考做成自动路由，本质是在压这部分浪费。
+      </p>
+    </article>
+
+    <article class="chapter" id="moe">
+      <div class="ch-head"><span class="ch-num">05</span><h2>MoE：总参数与激活参数</h2></div>
+      <p>
+        混合专家把 FFN 拆成很多组，每个 token 只选 top-k 组计算。
+        于是「总参数」决定显存占用，「激活参数」决定单 token 计算量。
+      </p>
+
+      <div class="recipe">
+        <div class="recipe-head"><span>MoE</span><span>简化</span></div>
+<pre>显存 ≈ 总参数 × bytes_per_param
+计算 ≈ 激活参数 × bytes_per_param（decode 读权重）
+路由：每个 token 选 top-k 专家，需要负载均衡避免塌缩</pre>
+      </div>
+
+      <p>
+        这带来一个常见误判：看到「1T 参数」就以为需要 1T 稠密模型的算力。
+        实际计算按激活部分走，但显存仍要装下全部专家，所以 MoE 对显存更敏感、对算力更友好。
+      </p>
+    </article>
+
+    <article class="chapter" id="diffusion">
+      <div class="ch-head"><span class="ch-num">06</span><h2>扩散模型：图像是怎么出来的</h2></div>
+      <p>
+        训练时给图片逐步加噪，让网络学会「预测这一步的噪声」；生成时从纯噪声出发，
+        反复去噪，最后得到图像。潜空间扩散（Latent Diffusion）先把图压到 VAE 潜空间，
+        再在潜空间里去噪，算力省一个数量级。
+      </p>
+
+      <div class="recipe">
+        <div class="recipe-head"><span>DIFFUSION</span><span>关键旋钮</span></div>
+<pre>步数 steps     越多越细，但耗时线性上涨；蒸馏模型可压到 4–8 步
+CFG            无分类器引导强度；越高越贴提示词，也越容易过饱和
+denoise (i2i)  从参考图加噪到第 t 步再开始去噪；越低越像原图
+latent 通道数  不同架构不通用，SDXL 4 通道 ≠ Z-Image 16 通道</pre>
+      </div>
+
+      <p>
+        图像侧的「Agent 化」体现在控制件：ControlNet 锁结构，IPAdapter 锁风格与身份，
+        inpainting 锁局部。它们都不改变扩散本身，只是把条件注入去噪过程。
+        这就是为什么本地生图实例里，人物一律走 i2i 而不是纯 t2i。
+      </p>
+    </article>
+
+    <article class="chapter" id="quant">
+      <div class="ch-head"><span class="ch-num">07</span><h2>量化与蒸馏</h2></div>
+      <p>两者常被混为一谈，其实目标不同：量化省显存与带宽，蒸馏省参数与步数。</p>
+
+      <div class="table-wrap">
+        <table class="data">
+          <thead><tr><th>手段</th><th>做什么</th><th>主要收益</th><th>主要代价</th></tr></thead>
+          <tbody>
+            <tr><td><b>FP16 / BF16</b></td><td>半精度权重</td><td>通用基线</td><td>显存占用最大</td></tr>
+            <tr><td><b>FP8</b></td><td>8 位浮点</td><td>显存减半，精度损失小</td><td>需要硬件与框架支持</td></tr>
+            <tr><td><b>INT8 / INT4</b></td><td>整数量化 + 缩放</td><td>显存显著下降，decode 提速</td><td>低比特下细节与长链推理退化</td></tr>
+            <tr><td><b>GGUF</b></td><td>面向 CPU / 混合推理的格式</td><td>本地部署友好，可按层量化</td><td>生态以 llama.cpp 为主</td></tr>
+            <tr><td><b>AWQ / GPTQ</b></td><td>面向 GPU 的权重量化</td><td>推理吞吐高</td><td>需要校准数据</td></tr>
+            <tr><td><b>蒸馏</b></td><td>大模型教小模型，或多步教少步</td><td>小模型接近大模型，步数下降</td><td>上限受教师与数据限制</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="table-note">
+        经验上，8 位量化几乎无损；4 位在通用对话上可接受，但在数学、代码和长链推理上更容易掉点。是否可接受要用自己的任务测。
+      </p>
+    </article>
+
+    <article class="chapter" id="eval">
+      <div class="ch-head"><span class="ch-num">08</span><h2>评估与幻觉</h2></div>
+      <p>
+        幻觉不是「模型撒谎」，而是下一词预测在缺乏依据时仍会生成流畅文本。
+        检索、引用、工具调用和「允许说不知道」都在缓解它，但都不能消除。
+      </p>
+
+      <div class="checklist">
+        <div><b>基准污染</b>测试集进入训练语料，分数虚高。</div>
+        <div class="no"><b>单次采样</b>只看一次结果，忽略方差。</div>
+        <div class="no"><b>脚手架混淆</b>把工具与提示词的功劳算给模型。</div>
+        <div><b>人类偏好</b>胜率不等于正确率，讨喜与准确是两回事。</div>
+        <div><b>分布外</b>真实业务的长尾远多于基准。</div>
+        <div><b>成本维度</b>不看 token 与延迟的评测没有工程意义。</div>
+      </div>
+
+      <p class="callout mute">
+        本站在各板块页不收录具体分数，原因就在这里：没有统一脚手架、采样次数与成本的分数，放一起比较会误导。
+      </p>
+    </article>
+  </section>
+
+  <nav class="pager">
+    <a href="apps.html"><span class="pg-l">← PREV</span><span class="pg-t">05 应用</span></a>
+    <a class="next" href="history.html"><span class="pg-l">NEXT →</span><span class="pg-t">07 历史</span></a>
+  </nav>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-grid">
+    <div>
+      <h5>定位</h5>
+      <p>AI 发展监控台：把基模、Agent、公司、硬件、应用、原理、历史、本地部署拆成可核对的台账。人工维护，不自动抓取。</p>
+      <p class="fine">公式为数量级口径，省略常数项与实现细节，只用于估算与排障。</p>
+    </div>
+    <div>
+      <h5>数据口径</h5>
+      <p class="fine">知识基线：2025-11 公开资料<br>2026 年新增进展：待补充<br>公式：简化，不作精确性能建模<br>评测分数：无出处不收录</p>
+      <p class="fine">页面不含本机路径、账号与未公开数据。</p>
+    </div>
+    <div>
+      <h5>站点地图</h5>
+      <div class="footer-links">
+        <a href="models.html">基模</a><a href="agents.html">Agent</a>
+        <a href="companies.html">公司</a><a href="hardware.html">硬件</a>
+        <a href="apps.html">应用</a><a href="principles.html">原理</a>
+        <a href="history.html">历史</a><a href="local.html">本地部署</a>
+        <a href="cases.html">实例索引</a><a href="lab/index.html">实例 01 · 生图</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

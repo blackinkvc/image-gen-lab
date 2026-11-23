@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>H3 实测看板 · 生图与生视频 · AI.TRACK / LAB 01</title>
+<meta name="description" content="MiniMax H3 在本机的实测看板：H3-Image 1024² 生图、H3 视频 2.33s 与 5.17s 样片、48+16 到 32+32 的内存分配调整、GGUF 反量化判定与看片总结。">
+<link rel="stylesheet" href="../assets/css/bench.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-in">
+        <a class="brand" href="../index.html">
+      <b>AI.TRACK</b><span class="sep">/</span><span class="sub">实例 01 · 生图实验</span>
+    </a>
+        <nav class="mainnav">
+      <a href="../index.html">首页</a>
+      <a href="../models.html">基模</a>
+      <a href="../agents.html">Agent</a>
+      <a href="../companies.html">公司</a>
+      <a href="../hardware.html">硬件</a>
+      <a href="../apps.html">应用</a>
+      <a href="../principles.html">原理</a>
+      <a href="../history.html">历史</a>
+      <a href="../local.html">本地部署</a>
+      <a class="is-active" href="../cases.html">实例</a>
+    </nav>
+    <div class="topbar-right">
+      <span class="meta">2026-11-23</span>
+      <a class="btn is-primary" href="index.html">← 总览</a>
+    </div>
+  </div>
+</header>
+
+<div class="subnav">
+  <div class="subnav-in">
+    <span class="sn-label">Lab 01</span><a href="../cases.html">← 实例索引</a><span class="sn-sep"></span>
+    <a href="scheme-sdxl.html">01 SDXL</a>
+    <a href="scheme-zimage-turbo.html">02 Z-Image Turbo</a>
+    <a href="scheme-zimage-base.html">03 Z-Image Base</a>
+    <a href="scheme-double.html">04 双采</a>
+    <a href="scheme-latent.html">05 放大链</a>
+    <a href="scheme-krea2.html">06 Krea 2</a>
+    <a href="scheme-moss.html">07 MOSS</a>
+    <span class="sn-sep"></span>
+    <a href="compare.html">横向对比</a>
+    <a href="gallery.html">案例库</a>
+    <a class="is-active" href="bench-h3.html">H3 实测</a>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <p class="crumb"><a href="index.html">总览</a><span class="sep">/</span><span>H3 实测</span></p>
+
+  <section class="page-head">
+    <h1>H3 实测看板</h1>
+    <p class="ph-sub">MINIMAX H3 · 生图 1024² · 生视频 832×480 · 内存 32 + 32</p>
+    <p class="lede">
+      生图 <b>40 s/张</b>；视频短样片可跑，5.17 s 一条要 <b>1668 s</b>；
+      16 GB 内存方案被证伪，<b>32 + 32 稳定</b>；GGUF 权重因缺 KV 元数据<b>全部不可用</b>。
+    </p>
+  </section>
+
+  <div class="statusline">
+    <span class="dot"></span>
+    <span>实测 5 项 · 通过 4 · 否决 1</span>
+    <span class="m">ryzen ai max+ 395 / radeon 8060s</span>
+    <span class="right">update 2026-11-23 16:09</span>
+  </div>
+
+  <!-- 第一行：环境 / 显存 / 内存 / 结论 -->
+  <div class="grid g4">
+
+    <section class="card">
+      <div class="card-head">
+        <h2>环境</h2>
+        <span class="h-meta">2 个实例</span>
+      </div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:9px">
+        <span class="chip green mono">ComfyUI 0.43.0</span>
+        <span class="chip purple mono">ComfyUI 0.45.0</span>
+      </div>
+      <dl class="rows">
+        <div class="row"><dt>ROCm</dt><dd>10.0.0</dd></div>
+        <div class="row"><dt>torch</dt><dd>2.13.0+rocm</dd></div>
+        <div class="row"><dt>HIP</dt><dd>7.15</dd></div>
+        <div class="row"><dt>H3 节点</dt><dd>仅 0.45.0</dd></div>
+      </dl>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>显存</h2>
+        <span class="h-meta">UMA 共用</span>
+      </div>
+      <div class="big"><b>44.9</b><small>GB 可用</small></div>
+      <div class="bar"><i style="width:84%"></i></div>
+      <div class="bar-foot"><span>视频峰值占用 37.8 GB</span><span>84%</span></div>
+      <dl class="rows">
+        <div class="row"><dt>视频运行时空闲</dt><dd>6.8 – 7.9 GB</dd></div>
+        <div class="row"><dt>口径</dt><dd class="muted">ComfyUI vram_total</dd></div>
+      </dl>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>系统内存</h2>
+        <span class="chip orange">已调整</span>
+      </div>
+      <div class="big warn"><b>32</b><small>GB 分配</small></div>
+      <div class="bar"><i style="width:76%"></i></div>
+      <div class="bar-foot"><span>视频运行后剩 7 – 8 GB</span><span>76%</span></div>
+      <dl class="rows">
+        <div class="row"><dt>原配置</dt><dd>48 + 16</dd></div>
+        <div class="row"><dt>现配置</dt><dd>32 + 32</dd></div>
+      </dl>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>结论</h2>
+        <span class="chip green">PASS</span>
+      </div>
+      <div class="big ok"><b>可跑</b><small>短样片</small></div>
+      <dl class="rows">
+        <div class="row"><dt>5.17 s 样片</dt><dd>1668 s</dd></div>
+        <div class="row"><dt>建议上限</dt><dd>5 s / 480p</dd></div>
+        <div class="row"><dt>批量出片</dt><dd class="muted">不合适</dd></div>
+      </dl>
+    </section>
+
+  </div>
+
+  <!-- 第二行：生图 / 生视频 -->
+  <div class="grid g-vid">
+
+    <section class="card">
+      <div class="card-head">
+        <h2>H3 生图实测</h2>
+        <span class="h-meta">H3-Image · 1024 × 1024</span>
+      </div>
+      <div class="big ok"><b>40</b><small>秒 / 张</small></div>
+      <dl class="rows">
+        <div class="row"><dt>分辨率</dt><dd>1024 × 1024</dd></div>
+        <div class="row"><dt>步数 / cfg</dt><dd>6 / 1.0</dd></div>
+        <div class="row"><dt>采样</dt><dd>euler / simple</dd></div>
+        <div class="row"><dt>文本编码</dt><dd>Qwen3-VL 32B int8</dd></div>
+        <div class="row"><dt>输出</dt><dd>PNG 1024²</dd></div>
+        <div class="row"><dt>结论</dt><dd><span class="chip green">通过</span></dd></div>
+      </dl>
+      <p class="vid-note" style="margin-top:10px">
+        与视频共用同一个 32B int8 编码器，换工作流即可复用。单张 <b>40 s</b>，节奏接近看板现有出图任务，可直接接批量队列。
+      </p>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>H3 生视频实测</h2>
+        <span class="h-meta">832 × 480 · 24 fps</span>
+      </div>
+      <table class="vid-table">
+        <thead>
+          <tr>
+            <th>时长</th>
+            <th class="num">帧数</th>
+            <th class="num">耗时</th>
+            <th>单步成本</th>
+            <th class="num">结果</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="spec">2.33 s</td>
+            <td class="num">56</td>
+            <td class="num">531 s</td>
+            <td class="cost">
+              <div class="bar"><i class="green" style="width:31%"></i></div>
+              <span>24.2 s/it</span>
+            </td>
+            <td class="num"><span class="chip green">通过</span></td>
+          </tr>
+          <tr>
+            <td class="spec">5.17 s</td>
+            <td class="num">124</td>
+            <td class="num">1668 s</td>
+            <td class="cost">
+              <div class="bar"><i style="width:100%"></i></div>
+              <span>≈ 80 s/步</span>
+            </td>
+            <td class="num"><span class="chip green">通过</span></td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="vid-note">
+        均为 <b>20 步</b>、<code>res_multistep</code> / <code>simple</code>、含音频。帧数放大 <b>2.21×</b>，耗时放大 <b>3.14×</b>——注意力随帧数超线性增长。
+      </p>
+    </section>
+
+  </div>
+
+  <!-- 第三行：内存迁移 / 可用组合 / GGUF / 已知坑 -->
+  <div class="grid g2">
+
+    <div style="display:grid;gap:12px;align-content:start">
+
+      <section class="card">
+        <div class="card-head">
+          <h2>内存分配 · 48+16 → 32+32</h2>
+          <span class="chip green">已定稿</span>
+        </div>
+        <div class="migrate">
+          <div class="side">
+            <b>48 / 16</b>
+            <span>显存 / 系统内存 · 初版</span>
+          </div>
+          <div class="arrow">→</div>
+          <div class="side to">
+            <b>32 / 32</b>
+            <span>显存 / 系统内存 · 定稿</span>
+          </div>
+        </div>
+        <dl class="rows">
+          <div class="row"><dt>16 GB 内存</dt><dd class="muted">跑 35B 后所剩无几</dd></div>
+          <div class="row"><dt>32 GB 内存</dt><dd>35B-A3B 常驻 CPU</dd></div>
+          <div class="row"><dt>32 GB 显存</dt><dd>ComfyUI + Z-Image</dd></div>
+        </dl>
+        <p class="vid-note" style="margin-top:9px">
+          物理 64 GB 统一内存，按用途切分。原方案把内存压到 16 GB，35B 与 ComfyUI 抢同一块，实测会互相拖崩。
+        </p>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>可用组合 · 全驻显存</h2>
+          <span class="h-meta">≤ 44.9 GB</span>
+        </div>
+        <dl class="wlist">
+          <div class="witem">
+            <dt><span>32B 文本编码器 int8</span><span class="v">25.3 GB</span></dt>
+            <dd><div class="bar"><i style="width:100%"></i></div></dd>
+          </div>
+          <div class="witem">
+            <dt><span>视频 DiT w6a8</span><span class="v">15.2 GB</span></dt>
+            <dd><div class="bar"><i style="width:60%"></i></div></dd>
+          </div>
+          <div class="witem">
+            <dt><span>视频 VAE int8</span><span class="v">2.7 GB</span></dt>
+            <dd><div class="bar"><i style="width:11%"></i></div></dd>
+          </div>
+          <div class="witem">
+            <dt><span>音频 VAE fp32</span><span class="v">0.6 GB</span></dt>
+            <dd><div class="bar"><i style="width:3%"></i></div></dd>
+          </div>
+        </dl>
+        <div class="wsum"><span>合计（视频管线）</span><b>43.2 GB</b></div>
+      </section>
+
+    </div>
+
+    <div style="display:grid;gap:12px;align-content:start">
+
+      <section class="card">
+        <div class="card-head">
+          <h2>GGUF 反量化</h2>
+          <span class="h-meta">3 文件 · 已清理</span>
+        </div>
+        <div class="big bad"><b>不可用</b><small>此路线</small></div>
+        <dl class="rows">
+          <div class="row"><dt>KV 元数据</dt><dd>kv_count = 0</dd></div>
+          <div class="row"><dt>detect_arch</dt><dd>Unknown arch</dd></div>
+          <div class="row"><dt>llama.cpp</dt><dd>incompatible</dd></div>
+          <div class="row"><dt>替代</dt><dd>int8 / w6a8</dd></div>
+        </dl>
+        <p class="vid-note" style="margin-top:9px">
+          社区 GGUF 缺 KV 元数据，两条加载路径都拒收。改走官方 <code>int8_convrot</code> / <code>w6a8</code> safetensors。
+        </p>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>已知坑</h2>
+          <span class="h-meta">3 项</span>
+        </div>
+        <ul class="pit">
+          <li><span class="n">01</span><span><b>LM Studio 自动重载 19 GB 的 35B</b>，系统内存被吃到只剩几百 MB，两次把 ComfyUI 拖崩。跑视频前先卸载并停服务。</span></li>
+          <li><span class="n">02</span><span><b>编码器 + 20 GB int8 DiT 超预算</b>，触发 <code>cuMemMap 719</code> 与 VRAM Allocation failed，GPU 上下文损坏。</span></li>
+          <li><span class="n">03</span><span><b>传统模式加载 20 GB DiT</b> 在 <code>.to(dtype)</code> 处原生崩溃，退出码 <code>0xC0000005</code>。</span></li>
+        </ul>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- 记录 -->
+  <section class="card">
+    <div class="card-head">
+      <h2>实测记录</h2>
+      <span class="h-meta">2026-11-22 → 11-23</span>
+    </div>
+    <ul class="log">
+      <li><span class="t">11-23 16:09</span><span class="e"><b>5.17 s 视频跑通</b><span>124 帧 / 1668 s</span></span><span class="st ok">通过</span></li>
+      <li><span class="t">11-23 15:30</span><span class="e"><b>GGUF 路线判定不可用</b><span>3 文件无 KV 元数据</span></span><span class="st bad">否决</span></li>
+      <li><span class="t">11-23 14:08</span><span class="e"><b>2.33 s 视频跑通</b><span>56 帧 / 531 s</span></span><span class="st ok">通过</span></li>
+      <li><span class="t">11-23</span><span class="e"><b>H3 生图 1024² 出图</b><span>6 步 / 40 s</span></span><span class="st ok">通过</span></li>
+      <li><span class="t">11-23</span><span class="e"><b>清理 3 个 GGUF</b><span>即时释放 19.8 GB</span></span><span class="st info">完成</span></li>
+      <li><span class="t">11-23</span><span class="e"><b>内存调整定稿</b><span>48+16 → 32+32</span></span><span class="st info">完成</span></li>
+      <li><span class="t">11-22</span><span class="e"><b>H3 权重就位</b><span>int8 编码器 / w6a8 DiT / int8 VAE</span></span><span class="st info">完成</span></li>
+    </ul>
+  </section>
+
+  <!-- 看片总结 -->
+  <section class="card" id="review" style="margin-top:12px">
+    <div class="card-head">
+      <h2>看片总结</h2>
+      <span class="h-meta">5.17 s 样片 · 抽帧 0 / 41 / 82 / 123</span>
+    </div>
+    <div class="review-grid">
+      <div class="review-col">
+        <h4>测试内容</h4>
+        <ul>
+          <li><b>H3 生图</b>：1024²、6 步、1 张</li>
+          <li><b>H3 生视频</b>：832×480、20 步、2 条（2.33 s / 5.17 s）</li>
+          <li><b>GGUF 反量化</b>：3 个权重、2 条加载路径</li>
+          <li><b>内存分配</b>：48+16 → 32+32</li>
+        </ul>
+      </div>
+      <div class="review-col">
+        <h4>结果</h4>
+        <ul>
+          <li>生图 <b>40 s/张</b>，画面可用</li>
+          <li>视频两条均成功，<b>带音频</b></li>
+          <li>5.17 s 一条 <b>1668 s</b>，峰值显存约 <b>37.8 GB</b></li>
+          <li>GGUF 全部不可用，<b>无 KV 元数据</b></li>
+          <li>16 GB 内存方案被证伪，<b>32+32 稳定</b></li>
+        </ul>
+      </div>
+      <div class="review-col">
+        <h4>建议</h4>
+        <ul>
+          <li>短样片控制在 <b>≤ 5 s / 832×480</b>，不指望批产</li>
+          <li>跑前<b>卸载 LM Studio 35B</b> 并停服务</li>
+          <li>长片先降帧数或分段，成本随帧数<b>超线性</b></li>
+          <li>批量需求走看板<b>异步队列</b>，不阻塞</li>
+          <li>权重只用官方 <b>int8_convrot / w6a8</b>，不再试 GGUF</li>
+        </ul>
+      </div>
+    </div>
+    <p class="review-quote">
+      <b>画面：</b>雨夜霓虹街道里的白蓝紫巨型机甲，镜头持续推进；中段到末帧构图连贯、结构稳定，没有明显崩坏或闪跳。
+    </p>
+  </section>
+
+<nav class="pager">
+  <a href="gallery.html"><span class="pg-l">← PREV</span><span class="pg-t">案例库</span></a>
+  <a class="next" href="index.html"><span class="pg-l">NEXT →</span><span class="pg-t">返回方案总览</span></a>
+</nav>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-grid">
+    <div>
+      <h5>口径</h5>
+      <p>
+        所有耗时含采样到落盘；首次加载在表格内单独注明。显存为 ComfyUI 上报的 vram_free 最低值，
+        峰值由 vram_total 相减得到，属于计算值。取不到的值写 null，不按记忆补写。
+      </p>
+      <p class="fine">图片仅收录原创科幻角色的技术对照与静物样张；路径已脱敏，无个人账号与本机目录。</p>
+    </div>
+    <div>
+      <h5>数据来源</h5>
+      <p class="fine">
+        生成台账 · 142 行 × 26 列<br>
+        玄枢号候选边车 · 128 份<br>
+        A/B 对照 · 同 prompt / 同 seed / 同画幅<br>
+        估算值单独标注，不当作实测
+      </p>
+    </div>
+    <div>
+      <h5>站点地图</h5>
+      <div class="footer-links">
+        <a href="index.html">方案总览</a>
+        <a href="compare.html">横向对比</a>
+        <a href="gallery.html">案例库</a>
+        <a href="bench-h3.html">H3 实测</a>
+        <a href="scheme-sdxl.html">01 SDXL</a>
+        <a href="scheme-zimage-turbo.html">02 Turbo</a>
+        <a href="scheme-zimage-base.html">03 Base</a>
+        <a href="scheme-double.html">04 双采</a>
+        <a href="scheme-latent.html">05 放大链</a>
+        <a href="scheme-krea2.html">06 Krea 2</a>
+        <a href="scheme-moss.html">07 MOSS</a>
+        <a href="index.html#method">方法论</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

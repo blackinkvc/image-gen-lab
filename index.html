@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>本机生图方案测试档案 · IMAGE.GEN LAB</title>
-<meta name="description" content="一套跑在 Ryzen AI MAX+ 395 上的生图管线实验记录：参数、实测耗时与显存、案例图、prompt 原文、判定与否决依据。">
+<title>AI.TRACK · AI 发展监控台</title>
+<meta name="description" content="把 AI 的进展拆成九块可核对的台账：基模、Agent、公司、硬件、应用、原理、历史、本地部署与实测实例。人工维护的快照，不自动抓取。">
 <link rel="stylesheet" href="assets/css/site.css">
 </head>
 <body>
@@ -12,36 +12,37 @@
 <header class="topbar">
   <div class="topbar-in">
     <a class="brand" href="index.html">
-      <b>IMAGE.GEN/LAB</b><span class="sep">/</span><span class="sub">本机生图实验档案</span>
+      <b>AI.TRACK</b><span class="sep">/</span><span class="sub">AI 发展监控台</span>
     </a>
     <nav class="mainnav">
-      <a class="is-active" href="index.html">总览</a>
-      <a href="compare.html">对比</a>
-      <a href="gallery.html">案例</a>
-      <a href="bench-h3.html">H3 实测</a>
-      <a href="#method">方法论</a>
+      <a class="is-active" href="index.html">首页</a>
+      <a href="models.html">基模</a>
+      <a href="agents.html">Agent</a>
+      <a href="companies.html">公司</a>
+      <a href="hardware.html">硬件</a>
+      <a href="apps.html">应用</a>
+      <a href="principles.html">原理</a>
+      <a href="history.html">历史</a>
+      <a href="local.html">本地部署</a>
+      <a href="cases.html">实例</a>
     </nav>
     <div class="topbar-right">
       <span class="meta">2026-11-23</span>
-      <a class="btn is-primary" href="#schemes">7 套方案</a>
+      <a class="btn is-primary" href="history.html">时间线</a>
     </div>
   </div>
 </header>
 
 <div class="subnav">
   <div class="subnav-in">
-    <span class="sn-label">Schemes</span>
-    <a href="scheme-sdxl.html">01 SDXL</a>
-    <a href="scheme-zimage-turbo.html">02 Z-Image Turbo</a>
-    <a href="scheme-zimage-base.html">03 Z-Image Base</a>
-    <a href="scheme-double.html">04 双采</a>
-    <a href="scheme-latent.html">05 放大链</a>
-    <a href="scheme-krea2.html">06 Krea 2</a>
-    <a href="scheme-moss.html">07 MOSS</a>
+    <span class="sn-label">Index</span>
+    <a href="#sectors">九个板块</a>
+    <a href="#signals">近期信号</a>
+    <a href="#howto">怎么读</a>
+    <a href="#instance">实例</a>
     <span class="sn-sep"></span>
-    <a href="compare.html">横向对比</a>
-    <a href="gallery.html">案例库</a>
-    <a href="bench-h3.html">H3 实测</a>
+    <a href="lab/index.html">01 生图实验</a>
+    <a href="history.html">发展时间线</a>
   </div>
 </div>
 
@@ -49,8 +50,8 @@
 
   <div class="statusline">
     <span class="dot"></span>
-    <span>7 套方案 · 142 行台账 · 128 份边车 · 1 项否决</span>
-    <span class="m">ryzen ai max+ 395 / radeon 8060s</span>
+    <span>9 板块 · 1 个实测实例 · 人工维护</span>
+    <span class="m">knowledge baseline 2025-11</span>
     <span class="right">update 2026-11-23</span>
   </div>
 
@@ -58,272 +59,219 @@
   <section class="hero">
     <div class="hero-grid">
       <div class="hero-copy">
-        <p class="eyebrow">Lab record / 2026-11</p>
-        <h1>一台机器，七套生图管线，<br>和它们各自的<em>实测账</em>。</h1>
+        <p class="eyebrow">AI watch / 2026-11</p>
+        <h1>把 AI 的进展，拆成<br>可以核对的<em>九块台账</em>。</h1>
         <p class="lede">
-          这里记录本机跑过的生图方案：怎么配、跑多快、吃多少显存、在什么图上翻车、为什么被换掉。
-          数字来自生成台账与边车，估算值单独标注。没有推荐位，只有结论和限制。
+          基模、Agent、公司、硬件、应用、原理、历史、本地部署、实测实例——
+          每一块只记录能落到出处的东西。不确定的写「待补充」，没采到的留空，
+          不把推测当成事实。
         </p>
         <div class="hero-meta">
-          <span><i class="dot"></i>AMD Radeon 8060S · UMA</span>
-          <span><i class="dot gray"></i>ROCm 10.0.0 / torch 2.13</span>
-          <span><i class="dot gray"></i>ComfyUI 串行出图</span>
+          <span><i class="dot"></i>基线 2025-11 公开资料</span>
+          <span><i class="dot gray"></i>2026 年进展：待补充</span>
+          <span><i class="dot gray"></i>无自动抓取 / 无外部依赖</span>
         </div>
       </div>
-      <figure class="hero-figure">
-        <span class="hero-tag">4096 × 6144</span>
-        <img src="assets/img/hero-helmet-8k.webp" alt="8K 头盔海报：latent 放大链产物" width="1400" height="2100">
-        <figcaption class="hero-cap">
-          <span>latent 放大链 · refine 26 步 d0.45</span>
-          <span>355.0 s / 21.7 GB</span>
-        </figcaption>
-      </figure>
+
+      <aside class="hero-panel">
+        <h3>近期信号 / SIGNALS</h3>
+        <ul class="sig-list">
+          <li><time>2025-11</time><span><b>Gemini 3 Pro</b> 发布，多模态与推理在同一条链上做，*细节待核。</span></li>
+          <li><time>2025-11</time><span><b>Claude Opus 4.5</b> 面向长任务与编码，*细节待核。</span></li>
+          <li><time>2025-11</time><span><b>Kimi K2 Thinking</b> 开放权重，1T MoE，主打工具调用。</span></li>
+          <li><time>2025-09</time><span><b>DeepSeek-V3.2-Exp</b> 稀疏注意力，API 降价。</span></li>
+          <li><time>2025-08</time><span><b>GPT-5</b> 统一快慢思考路由，不再单独暴露推理模型。</span></li>
+        </ul>
+        <p class="panel-note">这是知识基线的最后一段。2026 年的条目需要逐条复核后再补，不预填。</p>
+      </aside>
     </div>
   </section>
 
-  <!-- 总量 -->
-  <section class="stats" aria-label="档案总量">
-    <dl class="stat"><dt>收录方案</dt><dd>7<small>套</small></dd></dl>
-    <dl class="stat"><dt>生成台账</dt><dd>142<small>行 × 26 列</small></dd></dl>
-    <dl class="stat"><dt>带 prompt 的边车</dt><dd>128<small>份</small></dd></dl>
-    <dl class="stat"><dt>已否决</dt><dd><span class="accent">1</span><small>双采</small></dd></dl>
+  <!-- 统计 -->
+  <section class="stats" aria-label="站点概览">
+    <dl class="stat"><dt>收录板块</dt><dd>9<small>个</small></dd></dl>
+    <dl class="stat"><dt>实测实例</dt><dd>1<small>个 · 生图</small></dd></dl>
+    <dl class="stat"><dt>知识基线</dt><dd>2025-11<small>公开资料</small></dd></dl>
+    <dl class="stat"><dt>数据规则</dt><dd><span class="accent">三态</span><small>真值 / 空 / n/a</small></dd></dl>
   </section>
 
-  <!-- 方案卡 -->
-  <section class="section" id="schemes">
+  <!-- 九板块 -->
+  <section class="section" id="sectors">
     <div class="sec-head">
       <div>
-        <p class="sec-kicker">01 / Schemes</p>
-        <h2 class="sec-title">方案总览</h2>
+        <p class="sec-kicker">01 / Sectors</p>
+        <h2 class="sec-title">九个板块</h2>
       </div>
-      <p class="sec-note">当前主力置顶 · 其余按采用时间排列<br>点击卡片进入完整实验记录</p>
+      <p class="sec-note">先看结构，再看条目<br>每页都有快照日期与待补充清单</p>
     </div>
 
-    <div class="schemes">
+    <div class="sectors">
 
-      <!-- 02 Z-Image Turbo（featured） -->
-      <article class="pcard feature">
-        <a class="pcard-link" href="scheme-zimage-turbo.html" aria-label="Z-Image Turbo 方案详情"></a>
-        <div class="pcard-media">
-          <img src="assets/img/card-turbo.webp" alt="Z-Image Turbo 生成的科幻角色立绘" loading="lazy" width="760" height="1111">
-          <span class="pcard-idx">02</span>
-        </div>
-        <div class="pcard-body">
-          <div class="pcard-top">
-            <span class="status main">当前主力</span>
-            <span class="chip mono">ZIMAGE-TURBO</span>
-          </div>
-          <h3>Z-Image Turbo</h3>
-          <p class="pcard-sub">16 通道潜空间 / Qwen3-4B TE / 8 步蒸馏</p>
-          <p class="pcard-verdict">
-            8 步、cfg 1.0，常驻后单张 <b>20–30 s</b>。人物立绘一律 i2i，<b>denoise 0.45–0.55</b>；
-            t2i 只用于换服饰、提清晰度、换背景。纯 t2i 三 seed 脸不收敛，不能补新角色。
-          </p>
-          <dl class="pcard-metrics">
-            <div><dt>边车中位耗时</dt><dd>29.2<small>s</small></dd></div>
-            <div><dt>步数 / cfg</dt><dd>8<small>/ 1.0</small></dd></div>
-            <div><dt>峰值显存</dt><dd>22.0<small>GB</small></dd></div>
-          </dl>
-          <span class="pcard-cta">查看完整实验记录 <i>→</i></span>
-        </div>
+      <article class="sector">
+        <a class="sector-link" href="models.html" aria-label="基模"></a>
+        <span class="sector-k"><span>01 / Models</span><span>基模</span></span>
+        <h3>基模 <span>Frontier models</span></h3>
+        <p>闭源旗舰、开放权重、推理模型三条线，按发布时间与能力取向排，不按跑分排。</p>
+        <div class="sector-foot"><span>18 条 · 3 条主线</span><span class="go">进入 →</span></div>
       </article>
 
-      <!-- 01 SDXL -->
-      <article class="pcard">
-        <a class="pcard-link" href="scheme-sdxl.html" aria-label="SDXL 方案详情"></a>
-        <div class="pcard-media">
-          <img src="assets/img/card-sdxl.webp" alt="SDXL 生成的科幻角色立绘" loading="lazy" width="760" height="1111">
-          <span class="pcard-idx">01</span>
-        </div>
-        <div class="pcard-body">
-          <div class="pcard-top"><h3>SDXL · Juggernaut-XL v9</h3><span class="status">历史基线</span></div>
-          <p class="pcard-sub">SDXL 1.0 / 4 通道潜空间 / IPAdapter</p>
-          <p class="pcard-verdict">更锐，但更<b>蜡</b>。细节硬、皮肤质感偏塑料，已被 Z-Image 取代，只保留作对照。</p>
-          <dl class="pcard-metrics">
-            <div><dt>台账中位耗时</dt><dd>32.2<small>s</small></dd></div>
-            <div><dt>步数 / cfg</dt><dd>24<small>/ 5.0</small></dd></div>
-            <div><dt>台账</dt><dd>136<small>张</small></dd></div>
-          </dl>
-        </div>
+      <article class="sector">
+        <a class="sector-link" href="agents.html" aria-label="Agent"></a>
+        <span class="sector-k"><span>02 / Agents</span><span>Agent</span></span>
+        <h3>Agent <span>Tools &amp; protocols</span></h3>
+        <p>模型之外的工程层：工具调用、记忆、沙箱、MCP/A2A 协议与编码 Agent 产品。</p>
+        <div class="sector-foot"><span>8 产品 · 3 协议</span><span class="go">进入 →</span></div>
       </article>
 
-      <!-- 03 Z-Image Base -->
-      <article class="pcard">
-        <a class="pcard-link" href="scheme-zimage-base.html" aria-label="Z-Image Base 方案详情"></a>
-        <div class="pcard-media">
-          <div class="blank">
-            <span class="glyph">BASE</span>
-            <span class="blank-note">30 步 / cfg 4.0 · 未单独留档</span>
-          </div>
-          <span class="pcard-idx">03</span>
-        </div>
-        <div class="pcard-body">
-          <div class="pcard-top"><h3>Z-Image Base</h3><span class="status">备选</span></div>
-          <p class="pcard-sub">同架构非蒸馏版 / 30 步 / cfg 4.0</p>
-          <p class="pcard-verdict">低频更准、代价是慢。只在双采实验里作为第一段跑过，<b>没有单独产出对照</b>。</p>
-          <dl class="pcard-metrics">
-            <div><dt>配置</dt><dd>30<small>/ 4.0</small></dd></div>
-            <div><dt>独立耗时</dt><dd class="null">—</dd></div>
-            <div><dt>权重</dt><dd>11.46<small>GiB</small></dd></div>
-          </dl>
-        </div>
+      <article class="sector">
+        <a class="sector-link" href="companies.html" aria-label="公司"></a>
+        <span class="sector-k"><span>03 / Companies</span><span>公司</span></span>
+        <h3>公司 <span>Industry map</span></h3>
+        <p>算力、云、基模、工具、应用五层，看每家公司站在哪一层、靠什么收钱。</p>
+        <div class="sector-foot"><span>20 家 · 5 层</span><span class="go">进入 →</span></div>
       </article>
 
-      <!-- 04 双采 -->
-      <article class="pcard">
-        <a class="pcard-link" href="scheme-double.html" aria-label="双采方案详情"></a>
-        <div class="pcard-media">
-          <div class="blank denied">
-            <span class="glyph">OOM</span>
-            <span class="blank-note">BASE → TURBO · d0.25 · 分配 4.66 GB 失败</span>
-          </div>
-          <span class="pcard-idx">04</span>
-        </div>
-        <div class="pcard-body">
-          <div class="pcard-top"><h3>双采 · Base → Turbo</h3><span class="status dead">已否决</span></div>
-          <p class="pcard-sub">同架构续采 / 潜空间直连 / 不 VAE 往返</p>
-          <p class="pcard-verdict">B 组 d0.25 在<b>分配 4.66 GB 时 OOM</b>，进程以 <b>0xC0000005</b> 退出；0.35 档没轮到跑。</p>
-          <dl class="pcard-metrics">
-            <div><dt>A 组单采</dt><dd>41.67<small>s</small></dd></div>
-            <div><dt>失败分配</dt><dd>4.66<small>GB</small></dd></div>
-            <div><dt>退出码</dt><dd>0xC0000005</dd></div>
-          </dl>
-        </div>
+      <article class="sector">
+        <a class="sector-link" href="hardware.html" aria-label="硬件"></a>
+        <span class="sector-k"><span>04 / Hardware</span><span>硬件</span></span>
+        <h3>硬件 <span>Silicon &amp; memory</span></h3>
+        <p>加速卡与本地芯片的显存、带宽、功耗账；prefill 吃算力，decode 吃带宽。</p>
+        <div class="sector-foot"><span>12 型号 · 2 类瓶颈</span><span class="go">进入 →</span></div>
       </article>
 
-      <!-- 05 latent 放大链 -->
-      <article class="pcard">
-        <a class="pcard-link" href="scheme-latent.html" aria-label="latent 放大链方案详情"></a>
-        <div class="pcard-media">
-          <img src="assets/img/card-latent.webp" alt="latent 放大链产出的 8K 头盔海报" loading="lazy" width="760" height="1140">
-          <span class="pcard-idx">05</span>
-        </div>
-        <div class="pcard-body">
-          <div class="pcard-top"><h3>latent 放大链</h3><span class="status">单张交付</span></div>
-          <p class="pcard-sub">nearest-exact → refine → 4x-UltraSharp → lanczos</p>
-          <p class="pcard-verdict">唯一真正抬高细节密度的路径。代价是<b>单张 6 分钟级</b>，且会放大瑕疵——飘动布料出拖影。</p>
-          <dl class="pcard-metrics">
-            <div><dt>终图耗时</dt><dd>355–381<small>s</small></dd></div>
-            <div><dt>成品</dt><dd>4096×6144</dd></div>
-            <div><dt>峰值显存</dt><dd>21.7<small>GB</small></dd></div>
-          </dl>
-        </div>
+      <article class="sector">
+        <a class="sector-link" href="apps.html" aria-label="应用"></a>
+        <span class="sector-k"><span>05 / Apps</span><span>应用</span></span>
+        <h3>应用 <span>Products</span></h3>
+        <p>助手、编码、图像视频、音频、搜索研究、办公六类，记录形态而不是热度。</p>
+        <div class="sector-foot"><span>6 类 · 19 产品</span><span class="go">进入 →</span></div>
       </article>
 
-      <!-- 06 Krea 2 -->
-      <article class="pcard">
-        <a class="pcard-link" href="scheme-krea2.html" aria-label="Krea 2 方案详情"></a>
-        <div class="pcard-media">
-          <div class="blank">
-            <span class="glyph">KREA-2</span>
-            <span class="blank-note">权重已就位 · 0 条产出记录</span>
-          </div>
-          <span class="pcard-idx">06</span>
-        </div>
-        <div class="pcard-body">
-          <div class="pcard-top"><h3>Krea 2</h3><span class="status pending">未实测</span></div>
-          <p class="pcard-sub">RAW 52 步 / Turbo 8 步 / fp8_scaled</p>
-          <p class="pcard-verdict">12.24 GB 主模型与 4.88 GB TE 已就位，本批 A/B <b>没有产出可用记录</b>，参数留档待补。</p>
-          <dl class="pcard-metrics">
-            <div><dt>既定步数</dt><dd>52<small>/ 8</small></dd></div>
-            <div><dt>权重</dt><dd>12.24<small>GB</small></dd></div>
-            <div><dt>产出</dt><dd>0<small>条</small></dd></div>
-          </dl>
-        </div>
+      <article class="sector">
+        <a class="sector-link" href="principles.html" aria-label="原理"></a>
+        <span class="sector-k"><span>06 / Principles</span><span>原理</span></span>
+        <h3>原理 <span>How it works</span></h3>
+        <p>一次生成到底在算什么：prefill/decode、注意力、MoE、扩散、量化与蒸馏。</p>
+        <div class="sector-foot"><span>8 章 · 公式可查</span><span class="go">进入 →</span></div>
       </article>
 
-      <!-- 07 MOSS -->
-      <article class="pcard">
-        <a class="pcard-link" href="scheme-moss.html" aria-label="MOSS-Image 方案详情"></a>
-        <div class="pcard-media">
-          <div class="blank">
-            <span class="glyph">MOSS</span>
-            <span class="blank-note">5B DiT + 9B TE · 正在实测</span>
-          </div>
-          <span class="pcard-idx">07</span>
-        </div>
-        <div class="pcard-body">
-          <div class="pcard-top"><h3>MOSS-Image</h3><span class="status test">测试中</span></div>
-          <p class="pcard-sub">5B 单流 DiT / Qwen3.5-9B TE / FLUX.2 VAE</p>
-          <p class="pcard-verdict">50 步、双前向。占位：参数与显存口径已写死，<b>实测数据回来后补</b>，不预填推断值。</p>
-          <dl class="pcard-metrics">
-            <div><dt>采样</dt><dd>50<small>步</small></dd></div>
-            <div><dt>规模</dt><dd>5B<small>DiT</small></dd></div>
-            <div><dt>数据</dt><dd class="null">—</dd></div>
-          </dl>
-        </div>
+      <article class="sector">
+        <a class="sector-link" href="history.html" aria-label="历史"></a>
+        <span class="sector-k"><span>07 / History</span><span>历史</span></span>
+        <h3>历史 <span>Timeline</span></h3>
+        <p>1943 到今天，按符号主义、深度学习、大模型、推理与 Agent 分段。</p>
+        <div class="sector-foot"><span>5 个阶段 · 关键节点</span><span class="go">进入 →</span></div>
+      </article>
+
+      <article class="sector">
+        <a class="sector-link" href="local.html" aria-label="本地部署"></a>
+        <span class="sector-k"><span>08 / Local</span><span>本地部署</span></span>
+        <h3>本地部署 <span>On-device</span></h3>
+        <p>推理引擎、量化格式、显存估算与硬件路线，附本机 UMA 机器的实践入口。</p>
+        <div class="sector-foot"><span>7 工具 · 5 档显存</span><span class="go">进入 →</span></div>
+      </article>
+
+      <article class="sector">
+        <a class="sector-link" href="cases.html" aria-label="实例"></a>
+        <span class="sector-k"><span>09 / Cases</span><span>实例</span></span>
+        <h3>实例 <span>Field records</span></h3>
+        <p>可复现的实测档案。生图实验已上线，生视频、本地推理等留索引与占位。</p>
+        <div class="sector-foot"><span>1 已上线 · 5 占位</span><span class="go">进入 →</span></div>
       </article>
 
     </div>
   </section>
 
-  <!-- 其他入口 -->
-  <section class="section">
+  <!-- 近期信号 -->
+  <section class="section" id="signals">
     <div class="sec-head">
       <div>
-        <p class="sec-kicker">02 / More</p>
-        <h2 class="sec-title">其他入口</h2>
+        <p class="sec-kicker">02 / Signals</p>
+        <h2 class="sec-title">近期信号（基线末段）</h2>
       </div>
-      <p class="sec-note">同条件对照 · 原始产物 · H3 视频实测</p>
+      <p class="sec-note">只收录能说清「谁、什么时候、做了什么」的条目<br>2026 年段落整体待补</p>
     </div>
-    <div class="routes">
-      <article class="route">
-        <a class="route-link" href="compare.html" aria-label="横向对比"></a>
-        <span class="route-k">Compare</span>
-        <h3>横向对比</h3>
-        <p>同一 prompt、同一 seed 下 Z-Image Turbo 与 SDXL 的并排对照，含耗时、显存与这组对照本身的限制。</p>
-        <span class="route-arrow">进入对比 →</span>
-      </article>
-      <article class="route">
-        <a class="route-link" href="gallery.html" aria-label="案例库"></a>
-        <span class="route-k">Gallery</span>
-        <h3>案例库</h3>
-        <p>按方案筛选的 10 张原始产物，点开可看大图、参数与 prompt 原文，只收能核对到记录的图。</p>
-        <span class="route-arrow">进入案例库 →</span>
-      </article>
-      <article class="route">
-        <a class="route-link" href="bench-h3.html" aria-label="H3 实测看板"></a>
-        <span class="route-k">Bench / H3</span>
-        <h3>H3 实测</h3>
-        <p>MiniMax H3 的生图与生视频实测、48+16 → 32+32 内存调整、GGUF 否决判定与看片总结。</p>
-        <span class="route-arrow">进入看板 →</span>
-      </article>
+
+    <div class="signals">
+      <div class="signal"><time>2025-11</time><span><b>Gemini 3 Pro</b> 发布：多模态理解、推理与工具调用放在同一代旗舰里。</span><span class="chip purple">闭源</span></div>
+      <div class="signal"><time>2025-11</time><span><b>Claude Opus 4.5</b> 发布：面向长程任务与编码，Anthropic 的旗舰位。</span><span class="chip purple">闭源</span></div>
+      <div class="signal"><time>2025-11</time><span><b>Kimi K2 Thinking</b>：开放权重 1T MoE，强调多步工具调用与长程执行。</span><span class="chip green">开放权重</span></div>
+      <div class="signal"><time>2025-10</time><span><b>MiniMax M2</b>：面向 Agent 与编码场景的开放权重模型。</span><span class="chip green">开放权重</span></div>
+      <div class="signal"><time>2025-09</time><span><b>DeepSeek-V3.2-Exp</b>：引入稀疏注意力，API 价格同步下调。</span><span class="chip green">开放权重</span></div>
+      <div class="signal"><time>2025-08</time><span><b>GPT-5</b>：把快思考与慢思考收进一个路由，不再单独售卖推理模型。</span><span class="chip purple">闭源</span></div>
+      <div class="signal"><time>2025-07</time><span><b>Kimi K2</b> 与 <b>GLM-4.5</b> 相继开放权重，参数规模继续上探。</span><span class="chip green">开放权重</span></div>
+      <div class="signal"><time>2025-05</time><span><b>Claude 4</b> 与 <b>OpenAI Codex</b> 把编码 Agent 推到产品层。</span><span class="chip orange">Agent</span></div>
     </div>
   </section>
 
-  <!-- 方法论 -->
-  <section class="section" id="method">
+  <!-- 怎么读 -->
+  <section class="section" id="howto">
     <div class="sec-head">
       <div>
         <p class="sec-kicker">03 / Method</p>
-        <h2 class="sec-title">这份档案怎么读</h2>
+        <h2 class="sec-title">这份监控台怎么读</h2>
       </div>
-      <p class="sec-note">判定口径 / 数据三态 / 硬件口径<br>每个详情页都按这一套写</p>
+      <p class="sec-note">结构优先于结论<br>所有页面共用一套数据规则</p>
     </div>
+
     <div class="method">
       <div class="m-item">
-        <h4><span>A</span>台账三态</h4>
+        <h4><span>A</span>快照而不是实时</h4>
         <p>
-          真值直接记录；本该有值但当时没采到写 <code>null</code> 并登记进 unknown；
-          管线结构上不存在该环节写 <code>"n/a"</code>（例如 KSampler 没有 shift、t2i 没有参考图）。
-          本页所有「—」均为未采集，不是 0。
+          站点是人工整理的快照，不接自动抓取。每个板块页头写死快照日期；
+          超出知识基线的条目统一标「待补充」，不用记忆补写。
         </p>
       </div>
       <div class="m-item">
-        <h4><span>B</span>判定口径</h4>
+        <h4><span>B</span>三态写法</h4>
         <p>
-          2026-11-09 起不看脸像不像。只核对服装版型、配色材质、配饰、发型轮廓、体型、义体位置；
-          脸部只要求气质同档。五官偏差不作为否决项。
+          真值直接写；本该有值但没核对到的写 <code>—</code>；
+          结构上不存在的写 <code>n/a</code>。带 <code>*</code> 的条目表示细节待核实，
+          不作为选型依据。
         </p>
       </div>
       <div class="m-item">
-        <h4><span>C</span>硬件口径</h4>
+        <h4><span>C</span>不抄跑分</h4>
         <p>
-          Ryzen AI MAX+ 395，物理内存 64 GB，Windows 可见 15.65 GB。
-          ComfyUI 报 <code>vram_total</code> 57.84 GB（53.87 GiB）。
-          峰值显存 = <code>vram_total − 最低 vram_free</code>，每 2 s 采样一次。
+          没有出处的 benchmark 分数一律不收录。能力描述只写到「面向什么场景」，
+          具体强弱留给各板块页的「待补充」清单，等有可核对的数据再填。
         </p>
       </div>
+    </div>
+  </section>
+
+  <!-- 实例 -->
+  <section class="section" id="instance">
+    <div class="sec-head">
+      <div>
+        <p class="sec-kicker">04 / Case</p>
+        <h2 class="sec-title">唯一已上线的实例</h2>
+      </div>
+      <p class="sec-note">实例是站点里唯一允许出现「实测数字」的地方<br>其余板块只做结构梳理</p>
+    </div>
+
+    <div class="routes">
+      <article class="route">
+        <a class="route-link" href="lab/index.html" aria-label="实例 01 生图实验档案"></a>
+        <span class="route-k">Case 01 / Image</span>
+        <h3>本机生图实验档案</h3>
+        <p>7 套管线、142 行生成台账、128 份边车、1 项否决。参数、耗时、显存、prompt 原文与判定都回到记录。</p>
+        <span class="route-arrow">进入实验档案 →</span>
+      </article>
+      <article class="route">
+        <a class="route-link" href="cases.html" aria-label="实例索引"></a>
+        <span class="route-k">Index</span>
+        <h3>实例索引与占位</h3>
+        <p>生视频、本地推理、Agent 工作流、模型微调、硬件迁移五个后续实例的字段规范与占位卡。</p>
+        <span class="route-arrow">查看索引 →</span>
+      </article>
+      <article class="route">
+        <a class="route-link" href="local.html" aria-label="本地部署"></a>
+        <span class="route-k">Context</span>
+        <h3>这台机器凭什么跑得动</h3>
+        <p>统一内存、带宽瓶颈与量化取舍：先看本地部署页的算力账，再进实例看真实耗时。</p>
+        <span class="route-arrow">看本地部署 →</span>
+      </article>
     </div>
   </section>
 
@@ -334,38 +282,34 @@
     <div>
       <h5>定位</h5>
       <p>
-        个人实验档案，不是选型指南。同一台机器、同一批参考图、串行出图；
-        所有耗时包含模型常驻后的真实排队成本，首次加载单独注明。
+        AI 发展监控台：把基模、Agent、公司、硬件、应用、原理、历史、本地部署拆成可核对的台账。
+        人工维护，不自动抓取，不追热点排行。
       </p>
-      <p class="fine">
-        图片仅收录原创科幻角色的技术对照与静物样张。不收录可能涉及成人向、露骨或明确版权角色的图。
-      </p>
+      <p class="fine">带 <b>*</b> 的条目为待核实细节；空值与「—」表示未采集，不用推测值填充。</p>
     </div>
     <div>
-      <h5>数据来源</h5>
+      <h5>数据口径</h5>
       <p class="fine">
-        生成台账 · 142 行 / 26 列（Juggernaut 136、其他 6）<br>
-        玄枢号候选边车 · 128 份（prompt / seed / denoise / 耗时 / 显存）<br>
-        8K 海报实验日志 · 3 seed（raw + 终图耗时与峰值）<br>
-        A/B 对照 · 同一 prompt / 同 seed / 同画幅
+        知识基线：2025-11 公开资料<br>
+        2026 年新增进展：待补充<br>
+        时间统一 YYYY-MM，未确认到日的只写月份<br>
+        评测分数：无出处不收录
       </p>
-      <p class="fine">路径已脱敏 · 无个人账号与本机目录</p>
+      <p class="fine">页面不含本机路径、账号与未公开数据。</p>
     </div>
     <div>
       <h5>站点地图</h5>
       <div class="footer-links">
-        <a href="index.html">方案总览</a>
-        <a href="compare.html">横向对比</a>
-        <a href="gallery.html">案例库</a>
-        <a href="bench-h3.html">H3 实测</a>
-        <a href="scheme-sdxl.html">01 SDXL</a>
-        <a href="scheme-zimage-turbo.html">02 Turbo</a>
-        <a href="scheme-zimage-base.html">03 Base</a>
-        <a href="scheme-double.html">04 双采</a>
-        <a href="scheme-latent.html">05 放大链</a>
-        <a href="scheme-krea2.html">06 Krea 2</a>
-        <a href="scheme-moss.html">07 MOSS</a>
-        <a href="#method">方法论</a>
+        <a href="models.html">基模</a>
+        <a href="agents.html">Agent</a>
+        <a href="companies.html">公司</a>
+        <a href="hardware.html">硬件</a>
+        <a href="apps.html">应用</a>
+        <a href="principles.html">原理</a>
+        <a href="history.html">历史</a>
+        <a href="local.html">本地部署</a>
+        <a href="cases.html">实例索引</a>
+        <a href="lab/index.html">实例 01 · 生图</a>
       </div>
     </div>
   </div>

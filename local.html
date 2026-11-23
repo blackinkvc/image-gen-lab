@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>本地部署 · AI.TRACK</title>
+<meta name="description" content="本地部署台账：推理引擎、量化格式、显存估算、硬件路线与常见坑，附本机统一内存机器的实践入口。">
+<link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="index.html">
+      <b>AI.TRACK</b><span class="sep">/</span><span class="sub">AI 发展监控台</span>
+    </a>
+    <nav class="mainnav">
+      <a href="index.html">首页</a>
+      <a href="models.html">基模</a>
+      <a href="agents.html">Agent</a>
+      <a href="companies.html">公司</a>
+      <a href="hardware.html">硬件</a>
+      <a href="apps.html">应用</a>
+      <a href="principles.html">原理</a>
+      <a href="history.html">历史</a>
+      <a class="is-active" href="local.html">本地部署</a>
+      <a href="cases.html">实例</a>
+    </nav>
+    <div class="topbar-right">
+      <span class="meta">2026-11-23</span>
+      <a class="btn is-primary" href="lab/index.html">本机实例</a>
+    </div>
+  </div>
+</header>
+
+<div class="subnav">
+  <div class="subnav-in">
+    <span class="sn-label">Local</span>
+    <a href="#stack">推理栈</a>
+    <a href="#vram">显存档位</a>
+    <a href="#hw">硬件路线</a>
+    <a href="#pitfalls">常见坑</a>
+    <a href="#machine">本机实践</a>
+    <a href="#gap">待补充</a>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <p class="crumb"><a href="index.html">首页</a><span class="sep">/</span><span>08</span><span class="sep">/</span><span>本地部署</span></p>
+
+  <section class="page-head">
+    <div class="ph-grid">
+      <div>
+        <div class="card-top" style="margin-bottom:14px;justify-content:flex-start;gap:10px">
+          <span class="chip">推理引擎</span>
+          <span class="chip green">量化</span>
+          <span class="chip orange">本机实践</span>
+        </div>
+        <h1 class="ph-title">本地部署</h1>
+        <p class="ph-sub">ON-DEVICE · ENGINE · QUANTIZATION</p>
+        <p class="ph-lede">
+          本地部署解决的是<b>数据不出门、断网可用、长期成本可控</b>，代价是模型上限与维护成本。
+          能不能跑看显存，跑得快不快看带宽，跑得稳不稳看量化与上下文设置。
+        </p>
+      </div>
+      <aside class="spec-card">
+        <div class="spec-head"><span>SNAPSHOT</span><span>MANUAL</span></div>
+        <dl class="spec-body" style="margin:0">
+          <div class="spec-row"><dt>知识基线</dt><dd>2025-11</dd></div>
+          <div class="spec-row"><dt>工具条目</dt><dd>7 个</dd></div>
+          <div class="spec-row"><dt>显存档位</dt><dd>5 档</dd></div>
+          <div class="spec-row"><dt>实测</dt><dd>实例 01 · 生图</dd></div>
+          <div class="spec-row"><dt>2026 变化</dt><dd class="null">待补充</dd></div>
+        </dl>
+      </aside>
+    </div>
+
+    <div class="verdict-box">
+      <p class="vb-label">结论先行 / VERDICT</p>
+      <ol>
+        <li><b>先定显存，再选模型。</b><span>模型大小不是按「哪个更强」选，而是按「权重 + KV + 框架开销」能不能塞进显存选。</span></li>
+        <li><b>量化是必选项，不是妥协。</b><span>8 位几乎无损；4 位在通用任务上够用，长链推理要单独测。</span></li>
+        <li><b>统一内存与独显是两条路线。</b><span>前者装得下大模型但 decode 慢，后者快但显存小。选路线等于选你能接受的任务类型。</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="doc">
+    <article class="chapter" id="stack">
+      <div class="ch-head"><span class="ch-num">01</span><h2>推理栈怎么选</h2></div>
+      <p>按用途分，不要混用。同一个机器上装两套是常态。</p>
+
+      <div class="table-wrap">
+        <table class="data">
+          <thead><tr><th>工具</th><th>面向</th><th>平台</th><th>适合</th><th>注意</th></tr></thead>
+          <tbody>
+            <tr><td><b>llama.cpp / GGUF</b></td><td>CPU + GPU 混合</td><td>全平台</td><td>单机跑量化模型，CPU/统一内存也能用</td><td>参数多，性能调优靠经验</td></tr>
+            <tr><td><b>Ollama</b></td><td>开箱即用</td><td>全平台</td><td>快速试模型、本地 API</td><td>底层是 llama.cpp，细节可调项少</td></tr>
+            <tr><td><b>LM Studio</b></td><td>图形界面</td><td>桌面</td><td>不写代码时试用、对比模型</td><td>批量与自动化能力弱</td></tr>
+            <tr><td><b>vLLM</b></td><td>服务端吞吐</td><td>NVIDIA / ROCm</td><td>多并发 API、PagedAttention</td><td>显存要求高，部署更重</td></tr>
+            <tr><td><b>SGLang</b></td><td>结构化生成</td><td>NVIDIA / ROCm</td><td>高吞吐、复杂提示与约束解码</td><td>生态比 vLLM 小</td></tr>
+            <tr><td><b>MLX</b></td><td>Apple 芯片</td><td>macOS</td><td>M 系列统一内存优化</td><td>跨平台性差</td></tr>
+            <tr><td><b>ComfyUI</b></td><td>图像 / 视频生成</td><td>全平台</td><td>节点式扩散工作流</td><td>显存峰值高，需要单独调</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="chapter" id="vram">
+      <div class="ch-head"><span class="ch-num">02</span><h2>显存档位（估算）</h2></div>
+      <p>
+        下表是「能放下」的粗算，不是性能承诺。实际还要加 2–4 GB 框架开销，
+        并按上下文长度加 KV Cache。
+      </p>
+
+      <div class="table-wrap">
+        <table class="data">
+          <thead><tr><th>模型规模</th><th>FP16</th><th>INT8</th><th>INT4</th><th>典型硬件</th></tr></thead>
+          <tbody>
+            <tr><td><b>7–8B</b></td><td class="num">14–16 GB</td><td class="num">7–8 GB</td><td class="num">4–5 GB</td><td>12–16 GB 独显 / 16 GB 统一内存</td></tr>
+            <tr><td><b>13–14B</b></td><td class="num">26–28 GB</td><td class="num">13–14 GB</td><td class="num">8–9 GB</td><td>16–24 GB 独显</td></tr>
+            <tr><td><b>30–32B</b></td><td class="num">60–64 GB</td><td class="num">30–32 GB</td><td class="num">18–20 GB</td><td>24–48 GB 显存</td></tr>
+            <tr><td><b>70B</b></td><td class="num">140 GB</td><td class="num">70 GB</td><td class="num">38–42 GB</td><td>48–96 GB 显存 / 大统一内存</td></tr>
+            <tr><td><b>100B+ MoE</b></td><td class="num">按总参数</td><td class="num">按总参数</td><td class="num">65 GB+</td><td>96 GB+ 显存或统一内存</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">
+        全部为估算值，不含 KV Cache。MoE 的显存按<b>总参数</b>算，计算按激活参数算，两者不能混。
+      </p>
+    </article>
+
+    <article class="chapter" id="hw">
+      <div class="ch-head"><span class="ch-num">03</span><h2>硬件路线</h2></div>
+      <div class="mini-grid">
+        <div class="mini on">
+          <h4>Apple 统一内存 <span>macOS</span></h4>
+          <p>带宽 500–800 GB/s，能装大模型，功耗低、安静。适合单用户长文与创作。</p>
+        </div>
+        <div class="mini on">
+          <h4>x86 统一内存 <span>Strix Halo</span></h4>
+          <p>128 GB 容量、约 256 GB/s 带宽。装得下，decode 偏慢；图像生成反而更吃容量。</p>
+        </div>
+        <div class="mini on">
+          <h4>单卡独显 <span>RTX</span></h4>
+          <p>带宽 1–1.8 TB/s，decode 快。显存 24–96 GB，决定模型上限。</p>
+        </div>
+        <div class="mini on">
+          <h4>多卡 / 服务器 <span>Datacenter</span></h4>
+          <p>显存与带宽都能堆，但互联、功耗、噪音与成本进入另一个量级。</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="chapter" id="pitfalls">
+      <div class="ch-head"><span class="ch-num">04</span><h2>常见坑</h2></div>
+      <div class="checklist">
+        <div class="no"><b>只看权重体积</b>没算 KV Cache，长上下文一到就 OOM。</div>
+        <div class="no"><b>上下文开太大</b>并发数骤降，吞吐反而更差。</div>
+        <div class="no"><b>驱动与运行时版本不匹配</b>ROCm / CUDA 与框架版本必须对齐。</div>
+        <div class="no"><b>把 mmap 当万能</b>内存映射能省加载时间，但首次推理仍要读盘。</div>
+        <div><b>量化格式要配套</b>GGUF 给 llama.cpp，AWQ/GPTQ 给 GPU 服务端，不能混装。</div>
+        <div><b>先跑基线再调优</b>先确认官方示例能跑通，再动参数。</div>
+      </div>
+    </article>
+
+    <article class="chapter" id="machine">
+      <div class="ch-head"><span class="ch-num">05</span><h2>本机实践</h2></div>
+      <p>
+        当前实例跑在一台 Ryzen AI MAX+ 395（Radeon 8060S 统一内存）上，物理内存 64 GB，
+        Windows + ROCm 环境，串行出图。它不是「最合适的本地推理机」，但能把大模型完整放进内存，
+        适合做容量换速度的实验。
+      </p>
+      <div class="callout">
+        <p><b>已记录：</b>7 套生图管线、142 行生成台账、128 份边车、H3 的生图与生视频实测、48+16 → 32+32 内存迁移。</p>
+        <p><b>未记录：</b>本地 LLM 的 tokens/s 基准、vLLM 在 ROCm 上的并发表现、量化掉点对比。</p>
+      </div>
+      <p>
+        具体参数、耗时、显存与判定都在实例 01 里，不在本页重复：
+        <a href="lab/index.html">进入生图实验档案 →</a>
+      </p>
+    </article>
+
+    <article class="chapter" id="gap">
+      <div class="ch-head"><span class="ch-num">06</span><h2>待补充 / 数据限制</h2></div>
+      <ul>
+        <li><b>LLM 基准</b>：本机 tokens/s、首 token 延迟、并发曲线均未采集，占位在实例 #03。</li>
+        <li><b>量化对比</b>：同一模型 FP16 / INT8 / INT4 的质量与速度差异未做。</li>
+        <li><b>ROCm 兼容性</b>：不同框架在 ROCm 上的可用版本需逐个核对，本页不写具体版本号。</li>
+        <li><b>显存表</b>：为估算值，不同实现差异可达 20% 以上。</li>
+        <li><b>2026 工具变化</b>：推理引擎迭代快，条目整体待复核。</li>
+      </ul>
+    </article>
+  </section>
+
+  <nav class="pager">
+    <a href="history.html"><span class="pg-l">← PREV</span><span class="pg-t">07 历史</span></a>
+    <a class="next" href="cases.html"><span class="pg-l">NEXT →</span><span class="pg-t">09 实例索引</span></a>
+  </nav>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-grid">
+    <div>
+      <h5>定位</h5>
+      <p>AI 发展监控台：把基模、Agent、公司、硬件、应用、原理、历史、本地部署拆成可核对的台账。人工维护，不自动抓取。</p>
+      <p class="fine">显存表为估算，不含 KV Cache 与框架开销；实际以目标上下文长度为准。</p>
+    </div>
+    <div>
+      <h5>数据口径</h5>
+      <p class="fine">知识基线：2025-11 公开资料<br>2026 年新增进展：待补充<br>显存：估算值，留 15–25% 余量<br>版本号：不写，按官方文档核对</p>
+      <p class="fine">页面不含本机路径、账号与未公开数据。</p>
+    </div>
+    <div>
+      <h5>站点地图</h5>
+      <div class="footer-links">
+        <a href="models.html">基模</a><a href="agents.html">Agent</a>
+        <a href="companies.html">公司</a><a href="hardware.html">硬件</a>
+        <a href="apps.html">应用</a><a href="principles.html">原理</a>
+        <a href="history.html">历史</a><a href="local.html">本地部署</a>
+        <a href="cases.html">实例索引</a><a href="lab/index.html">实例 01 · 生图</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

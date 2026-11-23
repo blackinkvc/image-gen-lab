@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent · AI.TRACK</title>
+<meta name="description" content="Agent 工程层台账：工具调用、记忆、沙箱、MCP/A2A 协议、编码与通用 Agent 产品，以及评测与风险。">
+<link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="index.html">
+      <b>AI.TRACK</b><span class="sep">/</span><span class="sub">AI 发展监控台</span>
+    </a>
+    <nav class="mainnav">
+      <a href="index.html">首页</a>
+      <a href="models.html">基模</a>
+      <a class="is-active" href="agents.html">Agent</a>
+      <a href="companies.html">公司</a>
+      <a href="hardware.html">硬件</a>
+      <a href="apps.html">应用</a>
+      <a href="principles.html">原理</a>
+      <a href="history.html">历史</a>
+      <a href="local.html">本地部署</a>
+      <a href="cases.html">实例</a>
+    </nav>
+    <div class="topbar-right">
+      <span class="meta">2026-11-23</span>
+      <a class="btn is-primary" href="history.html">时间线</a>
+    </div>
+  </div>
+</header>
+
+<div class="subnav">
+  <div class="subnav-in">
+    <span class="sn-label">Agents</span>
+    <a href="#stack">能力栈</a>
+    <a href="#protocol">协议</a>
+    <a href="#products">产品台账</a>
+    <a href="#eval">评测</a>
+    <a href="#risk">风险</a>
+    <a href="#gap">待补充</a>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <p class="crumb"><a href="index.html">首页</a><span class="sep">/</span><span>02</span><span class="sep">/</span><span>Agent</span></p>
+
+  <section class="page-head">
+    <div class="ph-grid">
+      <div>
+        <div class="card-top" style="margin-bottom:14px;justify-content:flex-start;gap:10px">
+          <span class="chip orange">工程层</span>
+          <span class="chip">工具调用</span>
+          <span class="chip purple">长程执行</span>
+        </div>
+        <h1 class="ph-title">Agent</h1>
+        <p class="ph-sub">TOOLS · PROTOCOLS · LONG-HORIZON TASKS</p>
+        <p class="ph-lede">
+          Agent 不是新模型，是<b>把模型放进循环</b>：调工具、读结果、改计划、再调工具。
+          决定它能不能干活的，往往不是模型分数，而是权限、沙箱、失败恢复和成本上限。
+        </p>
+      </div>
+      <aside class="spec-card">
+        <div class="spec-head"><span>SNAPSHOT</span><span>MANUAL</span></div>
+        <dl class="spec-body" style="margin:0">
+          <div class="spec-row"><dt>知识基线</dt><dd>2025-11</dd></div>
+          <div class="spec-row"><dt>协议</dt><dd>MCP / A2A / AGENTS.md</dd></div>
+          <div class="spec-row"><dt>产品条目</dt><dd>8 个</dd></div>
+          <div class="spec-row"><dt>评测分数</dt><dd class="null">未收录</dd></div>
+          <div class="spec-row"><dt>本机实测</dt><dd class="null">待补充</dd></div>
+        </dl>
+      </aside>
+    </div>
+
+    <div class="verdict-box">
+      <p class="vb-label">结论先行 / VERDICT</p>
+      <ol>
+        <li><b>编码 Agent 是第一个跑通的场景。</b><span>代码有编译器、测试和版本控制，反馈可验证，所以 Agent 能自我纠错；通用办公场景缺少这套「判卷人」。</span></li>
+        <li><b>协议比模型更影响生态。</b><span>MCP 统一了「模型怎么接工具」，A2A 试图统一「Agent 怎么互相调用」。协议稳定后，工具方才有动力接入。</span></li>
+        <li><b>长程可靠性仍是短板。</b><span>任务超过十几步后，错误会累积；当前工程解法是拆任务、加检查点、限制单步权限，而不是换更大的模型。</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="doc">
+    <article class="chapter" id="stack">
+      <div class="ch-head"><span class="ch-num">01</span><h2>能力栈</h2></div>
+      <p>一个能用的 Agent 至少由五层组成，缺一层就会在真实任务里暴露：</p>
+
+      <div class="recipe">
+        <div class="recipe-head"><span>AGENT STACK</span><span>自上而下</span></div>
+<pre>编排层    <span class="k">plan → act → observe → replan</span>   任务拆解、循环控制、停止条件
+工具层    <span class="k">MCP / function calling</span>       文件、终端、浏览器、API
+记忆层    <span class="k">context + 外部存储</span>          上下文压缩、检索、检查点
+执行层    <span class="k">sandbox / VM / 容器</span>          权限、网络、文件系统隔离
+模型层    <span class="k">reasoning model</span>               规划质量与工具调用稳定性</pre>
+      </div>
+
+      <p>
+        常见误解是把 Agent 当成「更聪明的模型」。实际上同一模型换一套工具与沙箱，
+        任务成功率会差出数倍——工程层的权重不低于模型层。
+      </p>
+      <div class="callout warn">
+        <p><b>权限是最容易被忽略的一层。</b>给 Agent 一个能写文件、能发网络请求的终端，等于把整台机器交给它；生产环境必须按最小权限切分，并给每一步留可回滚的检查点。</p>
+      </div>
+    </article>
+
+    <article class="chapter" id="protocol">
+      <div class="ch-head"><span class="ch-num">02</span><h2>协议与接口</h2></div>
+      <p>2024 到 2025 年，Agent 生态最大的变化不是模型，而是接口开始标准化。</p>
+
+      <div class="table-wrap">
+        <table class="data">
+          <thead><tr><th>协议</th><th>提出方</th><th>时间</th><th>解决什么</th><th>状态</th></tr></thead>
+          <tbody>
+            <tr><td><b>MCP</b></td><td>Anthropic</td><td class="num">2024-11</td><td>模型 / 客户端如何统一接入外部工具与数据源</td><td><span class="chip green">事实标准</span></td></tr>
+            <tr><td><b>A2A</b></td><td>Google</td><td class="num">2025-04</td><td>不同厂商的 Agent 之间如何发现与协作</td><td><span class="chip orange">推进中</span></td></tr>
+            <tr><td><b>AGENTS.md</b></td><td>社区 / 多家</td><td class="num">2025</td><td>把仓库里的操作约定写给编码 Agent 看</td><td><span class="chip">约定俗成</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">
+        MCP 是「纵向」接口：Agent 往下接工具。A2A 是「横向」接口：Agent 之间互相调用。两者不冲突，但成熟度差一截。
+      </p>
+    </article>
+
+    <article class="chapter" id="products">
+      <div class="ch-head"><span class="ch-num">03</span><h2>产品台账</h2></div>
+      <p>按形态分三类：编码 Agent、通用 Agent、浏览器 / 计算机操作。</p>
+
+      <div class="table-wrap">
+        <table class="data">
+          <thead><tr><th>时间</th><th>产品</th><th>厂商</th><th>形态</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td class="num">2025-02</td><td><b>Claude Code</b></td><td>Anthropic</td><td>终端编码 Agent</td><td>研究预览起步，2025-05 正式可用。</td></tr>
+            <tr><td class="num">2025-05</td><td><b>OpenAI Codex</b></td><td>OpenAI</td><td>云端编码 Agent</td><td>在隔离环境中并行跑任务。</td></tr>
+            <tr><td class="num">2025-07</td><td><b>ChatGPT Agent</b></td><td>OpenAI</td><td>通用 Agent</td><td>浏览、下载、执行多步任务的统一入口。</td></tr>
+            <tr><td class="num">2025-03</td><td><b>Manus</b></td><td>Manus</td><td>通用 Agent</td><td>以「交付结果」为卖点的通用执行体。</td></tr>
+            <tr><td class="num">2025-01</td><td><b>Operator</b></td><td>OpenAI</td><td>浏览器操作</td><td>用视觉理解直接操作网页。</td></tr>
+            <tr><td class="num">2024-10</td><td><b>Computer Use</b></td><td>Anthropic</td><td>计算机操作</td><td>Claude 直接控制桌面环境。</td></tr>
+            <tr><td class="num">2024-03</td><td><b>Devin</b></td><td>Cognition</td><td>编码 Agent</td><td>早期「AI 软件工程师」形态。</td></tr>
+            <tr><td class="num">2023-</td><td><b>Cursor</b></td><td>Anysphere</td><td>IDE 内 Agent</td><td>编辑器内的补全、改写与多文件编辑。</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="chapter" id="eval">
+      <div class="ch-head"><span class="ch-num">04</span><h2>评测：看什么，不看什么</h2></div>
+      <p>
+        本页不收录具体分数，因为同一模型在不同脚手架、不同工具集下的成绩差异很大。
+        更有参考价值的是「这个基准考的是什么」。
+      </p>
+
+      <div class="mini-grid">
+        <div class="mini">
+          <h4>SWE-bench Verified <span>编码</span></h4>
+          <p>给真实仓库的 issue，看能否改到测试通过。考的是定位、修改与验证的完整闭环。</p>
+        </div>
+        <div class="mini">
+          <h4>Terminal-Bench <span>终端</span></h4>
+          <p>在命令行里完成多步系统任务，考工具使用与环境理解。</p>
+        </div>
+        <div class="mini">
+          <h4>τ-bench <span>对话 + 工具</span></h4>
+          <p>模拟客服等业务对话，同时调用后端工具，考规则遵循与状态一致性。</p>
+        </div>
+        <div class="mini">
+          <h4>OSWorld / WebArena <span>操作</span></h4>
+          <p>在真实桌面或网页环境里完成任务，考视觉定位与长程操作。</p>
+        </div>
+      </div>
+      <p class="table-note">
+        共同问题：基准会泄漏进训练集；脚手架不同导致不可比；单次成功率不反映成本。看结论时要问「跑了几次、什么工具、花了多少 token」。
+      </p>
+    </article>
+
+    <article class="chapter" id="risk">
+      <div class="ch-head"><span class="ch-num">05</span><h2>工程约束与风险</h2></div>
+      <div class="checklist">
+        <div class="no"><b>提示注入</b>网页与文件里的指令会被当成任务执行，必须做来源隔离。</div>
+        <div class="no"><b>权限过大</b>默认可写可联网，等于把生产环境交出去。</div>
+        <div class="no"><b>错误累积</b>步数越多，单步小错越容易滚成整体失败。</div>
+        <div class="no"><b>成本失控</b>循环没有硬上限时，token 消耗会指数级上涨。</div>
+        <div><b>可观测性</b>必须记录每一步的输入、工具调用与结果，否则无法复盘。</div>
+        <div><b>人机边界</b>高风险动作（付款、删除、发布）应强制人工确认。</div>
+      </div>
+    </article>
+
+    <article class="chapter" id="gap">
+      <div class="ch-head"><span class="ch-num">06</span><h2>待补充 / 数据限制</h2></div>
+      <ul>
+        <li><b>2026 年产品</b>：整体未收录，等官方文档核对后补。</li>
+        <li><b>基准分数</b>：不抄厂商自测，等统一脚手架下的可比结果。</li>
+        <li><b>本机实测</b>：本地 Agent 工作流的耗时、显存与成功率尚未采集，占位在实例索引 #04。</li>
+        <li><b>协议细节</b>：MCP 的传输方式、鉴权与工具描述规范未展开，等实际接入后再写。</li>
+        <li><b>定价</b>：订阅与按量计费差异大，本页不写具体价格。</li>
+      </ul>
+    </article>
+  </section>
+
+  <nav class="pager">
+    <a href="models.html"><span class="pg-l">← PREV</span><span class="pg-t">01 基模</span></a>
+    <a class="next" href="companies.html"><span class="pg-l">NEXT →</span><span class="pg-t">03 公司</span></a>
+  </nav>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-grid">
+    <div>
+      <h5>定位</h5>
+      <p>AI 发展监控台：把基模、Agent、公司、硬件、应用、原理、历史、本地部署拆成可核对的台账。人工维护，不自动抓取。</p>
+      <p class="fine">带 <b>*</b> 的条目为待核实细节；空值与「—」表示未采集，不用推测值填充。</p>
+    </div>
+    <div>
+      <h5>数据口径</h5>
+      <p class="fine">知识基线：2025-11 公开资料<br>2026 年新增进展：待补充<br>时间统一 YYYY-MM<br>评测分数：无出处不收录</p>
+      <p class="fine">页面不含本机路径、账号与未公开数据。</p>
+    </div>
+    <div>
+      <h5>站点地图</h5>
+      <div class="footer-links">
+        <a href="models.html">基模</a><a href="agents.html">Agent</a>
+        <a href="companies.html">公司</a><a href="hardware.html">硬件</a>
+        <a href="apps.html">应用</a><a href="principles.html">原理</a>
+        <a href="history.html">历史</a><a href="local.html">本地部署</a>
+        <a href="cases.html">实例索引</a><a href="lab/index.html">实例 01 · 生图</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

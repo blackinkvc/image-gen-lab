@@ -736,3 +736,134 @@ table.data .dim{color:var(--t3);font-size:10.5px}
   body{background:#fff}
   .chapter,.page-head,.case,.run{break-inside:avoid}
 }
+
+/* ============================================================
+   监测台扩展 — AI.TRACK 根级页面
+   板块卡 / 信号流 / 时间线 / 小卡组
+   ============================================================ */
+
+/* 首屏信号面板 */
+.hero-panel{
+  background:var(--card);border:1px solid var(--line);border-radius:9px;
+  padding:14px 16px;display:flex;flex-direction:column;min-height:240px;
+}
+.hero-panel h3{
+  margin:0 0 4px;font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--t3);font-weight:500;
+}
+.sig-list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column}
+.sig-list li{
+  display:grid;grid-template-columns:62px minmax(0,1fr);gap:10px;
+  padding:8px 0;border-bottom:1px solid var(--line-2);
+  font-size:11.5px;line-height:1.6;color:var(--t2);
+}
+.sig-list li:last-child{border-bottom:0}
+.sig-list time{font-family:var(--mono);font-size:10px;color:var(--t3);padding-top:1px}
+.sig-list b{color:var(--t1);font-weight:600}
+.hero-panel .panel-note{
+  margin-top:auto;padding-top:9px;border-top:1px solid var(--line-2);
+  font-size:10.5px;line-height:1.65;color:var(--t3);
+}
+
+/* 九板块入口 */
+.sectors{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.sector{
+  position:relative;display:flex;flex-direction:column;gap:5px;
+  background:var(--card);border:1px solid var(--line);border-radius:9px;
+  padding:13px 15px;transition:border-color .15s,box-shadow .15s;
+}
+.sector:hover{border-color:#d3d7dd;box-shadow:0 4px 14px rgba(24,29,36,.06)}
+.sector-k{
+  display:flex;justify-content:space-between;gap:8px;
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;
+  color:var(--t3);text-transform:uppercase;
+}
+.sector h3{margin:0;font-size:14.5px;font-weight:600;display:flex;align-items:baseline;gap:7px}
+.sector h3 span{font-family:var(--mono);font-size:10px;color:var(--t3);font-weight:400}
+.sector p{margin:0;font-size:11.5px;line-height:1.7;color:var(--t2)}
+.sector-foot{
+  margin-top:auto;padding-top:9px;border-top:1px solid var(--line-2);
+  display:flex;justify-content:space-between;gap:8px;
+  font-family:var(--mono);font-size:10px;color:var(--t3);
+}
+.sector-foot .go{color:var(--green);font-weight:600}
+.sector-link{position:absolute;inset:0;z-index:2;border-radius:9px}
+
+/* 时间线 */
+.timeline{margin:0;padding:0;list-style:none}
+.tl-item{
+  display:grid;grid-template-columns:66px 10px minmax(0,1fr);
+  gap:12px;position:relative;padding-bottom:13px;
+}
+.tl-item::before{
+  content:"";position:absolute;left:71px;top:12px;bottom:0;
+  width:1px;background:var(--line);
+}
+.tl-item:last-child{padding-bottom:0}
+.tl-item:last-child::before{display:none}
+.tl-year{font-family:var(--mono);font-size:10.5px;color:var(--t3);text-align:right;padding-top:1px}
+.tl-dot{
+  width:7px;height:7px;border-radius:50%;background:#cfd5dd;
+  margin-top:5px;justify-self:center;position:relative;z-index:1;
+}
+.tl-item.key .tl-dot{background:var(--green-dot)}
+.tl-item.now .tl-dot{background:var(--orange);box-shadow:0 0 0 3px var(--orange-bg)}
+.tl-body h4{margin:0 0 1px;font-size:12.5px;font-weight:600;line-height:1.45}
+.tl-body p{margin:0;font-size:11px;line-height:1.65;color:var(--t2)}
+.tl-body .tl-tag{font-family:var(--mono);font-size:9.5px;color:var(--t3);margin-left:6px}
+
+/* 小卡组 */
+.mini-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0 0 10px}
+.mini{
+  background:#fafbfc;border:1px solid var(--line-2);
+  border-left:3px solid #d8dce2;border-radius:7px;padding:9px 12px;
+}
+.mini h4{
+  margin:0 0 3px;font-size:11.5px;font-weight:600;
+  display:flex;justify-content:space-between;gap:8px;
+}
+.mini h4 span{font-family:var(--mono);font-size:9.5px;color:var(--t3);font-weight:400}
+.mini p{margin:0;font-size:11px;line-height:1.7;color:var(--t2)}
+.mini.on{border-left-color:#cfe8d9}
+.mini.warn{border-left-color:#f0d9b8}
+
+/* 图例 */
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:10.5px;color:var(--t3);margin:0 0 10px}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:7px;height:7px;border-radius:50%;background:#cfd5dd;display:inline-block}
+.legend i.g{background:var(--green-dot)}
+.legend i.o{background:var(--orange)}
+
+/* 根级页面的表格略收紧 */
+table.data td .cn{color:var(--t2)}
+table.data td .sep-dot{color:#cfd3d9;margin:0 4px}
+
+@media (max-width:1100px){
+  .sectors{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .topbar-right{display:none}
+}
+@media (max-width:760px){
+  .sectors{grid-template-columns:minmax(0,1fr)}
+  .mini-grid{grid-template-columns:minmax(0,1fr)}
+  .hero-panel{min-height:0}
+  .sig-list li{grid-template-columns:56px minmax(0,1fr)}
+  .tl-item{grid-template-columns:56px 10px minmax(0,1fr)}
+  .tl-item::before{left:61px}
+}
+
+/* 信号流（首页 section） */
+.signals{background:var(--card);border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.signal{
+  display:grid;grid-template-columns:78px minmax(0,1fr) auto;gap:10px;align-items:baseline;
+  padding:9px 13px;border-bottom:1px solid var(--line-2);
+  font-size:11.5px;line-height:1.65;color:var(--t2);
+}
+.signal:last-child{border-bottom:0}
+.signal time{font-family:var(--mono);font-size:10px;color:var(--t3)}
+.signal b{color:var(--t1);font-weight:600}
+.signal .chip{white-space:nowrap}
+
+@media (max-width:760px){
+  .signal{grid-template-columns:56px minmax(0,1fr)}
+  .signal .chip{grid-column:2;justify-self:start;margin-top:2px}
+}

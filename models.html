@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>基模 · AI.TRACK</title>
+<meta name="description" content="基模台账：闭源旗舰、开放权重与推理模型的时间线、技术主线与选型维度。快照 2025-11，2026 条目待补充。">
+<link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="index.html">
+      <b>AI.TRACK</b><span class="sep">/</span><span class="sub">AI 发展监控台</span>
+    </a>
+    <nav class="mainnav">
+      <a href="index.html">首页</a>
+      <a class="is-active" href="models.html">基模</a>
+      <a href="agents.html">Agent</a>
+      <a href="companies.html">公司</a>
+      <a href="hardware.html">硬件</a>
+      <a href="apps.html">应用</a>
+      <a href="principles.html">原理</a>
+      <a href="history.html">历史</a>
+      <a href="local.html">本地部署</a>
+      <a href="cases.html">实例</a>
+    </nav>
+    <div class="topbar-right">
+      <span class="meta">2026-11-23</span>
+      <a class="btn is-primary" href="history.html">时间线</a>
+    </div>
+  </div>
+</header>
+
+<div class="subnav">
+  <div class="subnav-in">
+    <span class="sn-label">Models</span>
+    <a href="#table">模型台账</a>
+    <a href="#lines">三条主线</a>
+    <a href="#choose">选型维度</a>
+    <a href="#gap">待补充</a>
+    <span class="sn-sep"></span>
+    <a href="principles.html">原理补充</a>
+    <a href="local.html">怎么本地跑</a>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <p class="crumb"><a href="index.html">首页</a><span class="sep">/</span><span>01</span><span class="sep">/</span><span>基模</span></p>
+
+  <section class="page-head">
+    <div class="ph-grid">
+      <div>
+        <div class="card-top" style="margin-bottom:14px;justify-content:flex-start;gap:10px">
+          <span class="chip purple">闭源旗舰</span>
+          <span class="chip green">开放权重</span>
+          <span class="chip orange">推理模型</span>
+        </div>
+        <h1 class="ph-title">基模</h1>
+        <p class="ph-sub">FRONTIER MODELS · SNAPSHOT 2025-11</p>
+        <p class="ph-lede">
+          基模是整条产业链的地基，也是变化最快的一层。这页不排名，只按<b>发布时间、权重形态、能力取向</b>
+          列台账：谁在什么时候把什么能力做进了默认配置。跑分没有出处就不写。
+        </p>
+      </div>
+      <aside class="spec-card">
+        <div class="spec-head"><span>SNAPSHOT</span><span>MANUAL</span></div>
+        <dl class="spec-body" style="margin:0">
+          <div class="spec-row"><dt>知识基线</dt><dd>2025-11</dd></div>
+          <div class="spec-row"><dt>收录条目</dt><dd>18 条</dd></div>
+          <div class="spec-row"><dt>权重形态</dt><dd>闭源 / 开放</dd></div>
+          <div class="spec-row"><dt>2026 进展</dt><dd class="null">待补充</dd></div>
+          <div class="spec-row"><dt>评测分数</dt><dd class="null">未收录</dd></div>
+        </dl>
+      </aside>
+    </div>
+
+    <div class="verdict-box">
+      <p class="vb-label">三条结论 / VERDICT</p>
+      <ol>
+        <li><b>闭源旗舰的节奏是「合并」。</b><span>快慢思考、多模态、工具调用逐渐收进一个默认模型，单独发布的推理模型越来越少。</span></li>
+        <li><b>开放权重追得很紧，但差一个身位。</b><span>头部开放模型在通用对话上接近旗舰，长程 Agent 与多模态仍有差距；许可证差异比参数差异更影响可用性。</span></li>
+        <li><b>参数规模不再是唯一叙事。</b><span>MoE 把总参数与激活参数拆开，稀疏化、注意力和数据配比比堆参数更能解释实际体验。</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="doc" id="table">
+    <article class="chapter">
+      <div class="ch-head"><span class="ch-num">01</span><h2>模型台账</h2></div>
+      <p>
+        按发布时间排列，同一机构只保留代表作。带 <code>*</code> 的条目细节待核实；
+        参数规模只写公开确认过的量级，不补推断值。
+      </p>
+
+      <div class="table-wrap">
+        <table class="data">
+          <thead>
+            <tr><th>时间</th><th>模型</th><th>机构</th><th>权重</th><th>取向</th><th>一句话</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="num">2025-11</td><td><b>Gemini 3 Pro</b> *</td><td>Google</td><td>闭源</td><td>多模态旗舰</td><td>理解、推理、工具调用收进同一代旗舰。</td></tr>
+            <tr><td class="num">2025-11</td><td><b>Claude Opus 4.5</b> *</td><td>Anthropic</td><td>闭源</td><td>长任务 / 编码</td><td>面向长程执行与工程任务。</td></tr>
+            <tr><td class="num">2025-11</td><td><b>Kimi K2 Thinking</b></td><td>月之暗面</td><td>开放</td><td>Agent</td><td>1T MoE，强调多步工具调用。</td></tr>
+            <tr><td class="num">2025-10</td><td><b>MiniMax M2</b> *</td><td>MiniMax</td><td>开放</td><td>Agent / 编码</td><td>面向 Agent 场景优化的开放权重模型。</td></tr>
+            <tr><td class="num">2025-09</td><td><b>DeepSeek-V3.2-Exp</b></td><td>DeepSeek</td><td>开放</td><td>效率</td><td>稀疏注意力，API 同步降价。</td></tr>
+            <tr><td class="num">2025-09</td><td><b>Claude Sonnet 4.5</b></td><td>Anthropic</td><td>闭源</td><td>中端主力</td><td>编码与计算机操作能力下放到中端价位。</td></tr>
+            <tr><td class="num">2025-09</td><td><b>Qwen3-Max</b></td><td>阿里</td><td>闭源</td><td>旗舰 API</td><td>Qwen 系列的闭源旗舰位。</td></tr>
+            <tr><td class="num">2025-09</td><td><b>GLM-4.6</b></td><td>智谱</td><td>开放</td><td>编码 / 长上下文</td><td>面向编码与长文档场景。</td></tr>
+            <tr><td class="num">2025-08</td><td><b>GPT-5</b></td><td>OpenAI</td><td>闭源</td><td>统一路由</td><td>快慢思考合并，按问题难度自动路由。</td></tr>
+            <tr><td class="num">2025-07</td><td><b>Kimi K2</b></td><td>月之暗面</td><td>开放</td><td>MoE 旗舰</td><td>开放权重的大参数 MoE。</td></tr>
+            <tr><td class="num">2025-07</td><td><b>GLM-4.5</b></td><td>智谱</td><td>开放</td><td>通用</td><td>推理、编码、Agent 三合一。</td></tr>
+            <tr><td class="num">2025-06</td><td><b>Doubao 1.6</b></td><td>字节</td><td>闭源</td><td>多模态</td><td>国内多模态主力之一。</td></tr>
+            <tr><td class="num">2025-06</td><td><b>ERNIE 4.5</b></td><td>百度</td><td>开放</td><td>多模态</td><td>多模态 MoE，部分权重开放。</td></tr>
+            <tr><td class="num">2025-05</td><td><b>Claude 4</b></td><td>Anthropic</td><td>闭源</td><td>编码 / Agent</td><td>把编码 Agent 作为主场景。</td></tr>
+            <tr><td class="num">2025-04</td><td><b>Llama 4</b></td><td>Meta</td><td>开放</td><td>MoE</td><td>Scout / Maverick 两档，长上下文。</td></tr>
+            <tr><td class="num">2025-04</td><td><b>Qwen3</b></td><td>阿里</td><td>开放</td><td>双模式</td><td>思考 / 非思考模式可切换。</td></tr>
+            <tr><td class="num">2025-03</td><td><b>Gemini 2.5 Pro</b></td><td>Google</td><td>闭源</td><td>长上下文</td><td>百万级上下文，原生多模态。</td></tr>
+            <tr><td class="num">2025-01</td><td><b>DeepSeek-R1</b></td><td>DeepSeek</td><td>开放</td><td>推理</td><td>RL 训练推理能力，蒸馏版带动小模型。</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">
+        「开放」指权重可下载，不等于可商用；许可证需逐个确认。<b>2026 年条目整体待补充。</b>
+      </p>
+    </article>
+
+    <article class="chapter" id="lines">
+      <div class="ch-head"><span class="ch-num">02</span><h2>三条主线，一个转折</h2></div>
+      <p>
+        按时间看是一串发布，按机制看只有三条线在同时推进，外加 2025 年的一次转折。
+        理解这四条，比记住模型名有用。
+      </p>
+
+      <div class="mini-grid">
+        <div class="mini on">
+          <h4>稠密 → MoE <span>2023 →</span></h4>
+          <p>
+            总参数继续涨，但每个 token 只激活一部分专家。好处是同成本下容量更大，
+            代价是显存占用按总参数算、路由与负载均衡变复杂。
+          </p>
+        </div>
+        <div class="mini on">
+          <h4>预训练 → 后训练 <span>2024 →</span></h4>
+          <p>
+            预训练决定知识上限，SFT 与偏好优化决定「好不好用」。
+            2025 年的增量更多来自可验证奖励的强化学习，而不是更大的预训练语料。
+          </p>
+        </div>
+        <div class="mini on">
+          <h4>文本 → 原生多模态 <span>2024 →</span></h4>
+          <p>
+            从「拼一个视觉编码器」转向音频、图像、视频在同一套表示里训练。
+            语音端到端是分水岭：延迟和语气都变了。
+          </p>
+        </div>
+        <div class="mini warn">
+          <h4>推理即产品 <span>2024-09 →</span></h4>
+          <p>
+            o1 之后，推理不再是隐藏步骤，而是可以按 token 售卖的商品。
+            GPT-5 又把这条路收回默认路由，说明「单独一个推理模型」只是过渡形态。
+          </p>
+        </div>
+      </div>
+
+      <p class="table-note">
+        判断一条发布是不是「真进展」，可以看它是否改变了默认配置：默认上下文长度、默认是否思考、默认是否带工具。
+      </p>
+    </article>
+
+    <article class="chapter" id="choose">
+      <div class="ch-head"><span class="ch-num">03</span><h2>选型维度</h2></div>
+      <p>不按榜单选，按约束选。以下六项按对实际成本的影响排序：</p>
+      <div class="checklist">
+        <div><b>许可证</b>开放权重不等于可商用，先看条款再看能力。</div>
+        <div><b>上下文</b>标称长度 ≠ 有效长度，长文任务要实测检索位置。</div>
+        <div><b>单价</b>按输入 / 输出分别计，推理模型的输出 token 往往更多。</div>
+        <div><b>吞吐</b>Agent 场景看并发与首 token 延迟，不只看单次质量。</div>
+        <div><b>工具调用</b>结构化输出稳定性决定 Agent 能不能落地。</div>
+        <div><b>可部署性</b>能不能私有化、量化后掉多少，决定长期成本。</div>
+      </div>
+    </article>
+
+    <article class="chapter" id="gap">
+      <div class="ch-head"><span class="ch-num">04</span><h2>待补充 / 数据限制</h2></div>
+      <ul>
+        <li><b>2026 年条目</b>：整体未收录，等逐条核对官方发布后再补，不按趋势推测。</li>
+        <li><b>评测分数</b>：SWE-bench、GPQA、AIME 等分数未收录，避免把厂商自测当成横向比较。</li>
+        <li><b>价格</b>：API 价格变动频繁，本页不写具体数字，只保留计价方式。</li>
+        <li><b>参数规模</b>：多数闭源模型不公开，开放模型也只写公开确认的量级。</li>
+        <li><b>版本命名</b>：同一代常有多个小版本，带 <code>*</code> 的条目以官方页面为准。</li>
+      </ul>
+    </article>
+  </section>
+
+  <nav class="pager">
+    <a href="index.html"><span class="pg-l">← PREV</span><span class="pg-t">首页 · 九个板块</span></a>
+    <a class="next" href="agents.html"><span class="pg-l">NEXT →</span><span class="pg-t">02 Agent</span></a>
+  </nav>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-grid">
+    <div>
+      <h5>定位</h5>
+      <p>AI 发展监控台：把基模、Agent、公司、硬件、应用、原理、历史、本地部署拆成可核对的台账。人工维护，不自动抓取。</p>
+      <p class="fine">带 <b>*</b> 的条目为待核实细节；空值与「—」表示未采集，不用推测值填充。</p>
+    </div>
+    <div>
+      <h5>数据口径</h5>
+      <p class="fine">知识基线：2025-11 公开资料<br>2026 年新增进展：待补充<br>时间统一 YYYY-MM<br>评测分数：无出处不收录</p>
+      <p class="fine">页面不含本机路径、账号与未公开数据。</p>
+    </div>
+    <div>
+      <h5>站点地图</h5>
+      <div class="footer-links">
+        <a href="models.html">基模</a><a href="agents.html">Agent</a>
+        <a href="companies.html">公司</a><a href="hardware.html">硬件</a>
+        <a href="apps.html">应用</a><a href="principles.html">原理</a>
+        <a href="history.html">历史</a><a href="local.html">本地部署</a>
+        <a href="cases.html">实例索引</a><a href="lab/index.html">实例 01 · 生图</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
